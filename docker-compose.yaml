@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=development
+
+  app-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - "80:80"
+    environment:
+      - ENV=production
