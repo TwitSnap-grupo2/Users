@@ -11,10 +11,7 @@ class Interests(str, Enum):
     engineering = "engineering"
 
 
-# TODO: complete this
-# user refers to the login name, where name refers to the displayed name inside the app
-class User(BaseModel):
-    id: str
+class NewUser(BaseModel):
     user: str
     name: str
     location: (
@@ -29,3 +26,9 @@ class User(BaseModel):
     # twit_snaps: list[]
     # snap_shares: list[]
     # favorites: list[]
+
+
+# TODO: complete this
+# user refers to the login name, where name refers to the displayed name inside the app
+class User(NewUser):
+    id: str
