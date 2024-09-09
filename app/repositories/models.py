@@ -12,8 +12,8 @@ class Interests(str, Enum):
 
 
 class NewUser(BaseModel):
-    user: str
-    name: str
+    user: str  # Must be unique
+    name: str  # Must be unique
     location: (
         str  # TODO: check if there exists a model that provides fixed geolocations
     )
@@ -28,7 +28,5 @@ class NewUser(BaseModel):
     # favorites: list[]
 
 
-# TODO: complete this
-# user refers to the login name, where name refers to the displayed name inside the app
 class User(NewUser):
     id: str

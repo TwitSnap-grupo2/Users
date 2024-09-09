@@ -18,3 +18,14 @@ services:
       - "80:80"
     environment:
       - ENV=production
+  test:
+    build:
+      context: .
+      target: development
+    volumes:
+      - .:/code
+    environment:
+      - ENV=testing
+    command: pytest -s
+    depends_on:
+      - app
