@@ -16,6 +16,11 @@ docker compose up app-prod
 docker compose up app
 ```
 
+## Testing
+```bash
+docker compose up test 
+```
+
 ### Aclaraciones
 
 - Para ver docu de la API expuesta:
@@ -35,3 +40,5 @@ http://0.0.0.0:8000/redoc
 ```bash
 htthttp://0.0.0.0:8000/openapi.json
 ```
+
+
