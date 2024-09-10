@@ -6,16 +6,17 @@ from app.repositories.models import NewUser, User
 from app.repositories.users import insert_user
 from app.tests.utils import empty_database, contains_values
 import pytest
-from httpx import ASGITransport, AsyncClient
 
 client = TestClient(app)
 
 
 test_user = NewUser(
+    email="donpepo@test.com",
     user="Pepo",
     name="Don Pepo",
     location="Argentina",
     interests=["engineering"],
+    goals=["Matear los domingos"],
 )
 
 
