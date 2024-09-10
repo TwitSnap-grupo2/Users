@@ -29,4 +29,4 @@ class NewUser(BaseModel):
 
 
 class User(NewUser):
-    id: str
+    id: UUID

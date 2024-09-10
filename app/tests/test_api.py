@@ -1,10 +1,12 @@
+from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
 from app.repositories.models import NewUser, User
-from app.tests.utils import empty_database, contains_values, insert_user
+from app.repositories.users import insert_user
+from app.tests.utils import empty_database, contains_values
 import pytest
-
+from httpx import ASGITransport, AsyncClient
 
 client = TestClient(app)
 
@@ -42,14 +44,16 @@ def test_post_user_returns_created_user():
     assert response.json()["id"]
 
 
-def test_get_users_returns_a_list_with_the_users():
-    user = User(**test_user.model_dump(), id="1")
-    insert_user(user)
+@pytest.mark.anyio
+async def test_get_users_returns_a_list_with_the_users():
+    user = await insert_user(test_user)
+    dumped_user = user.model_dump()
+    dumped_user["id"] = str(dumped_user["id"])
 
     response = client.get("/users/")
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == [user.model_dump()]
+    assert response.json() == [dumped_user]
 
 
 def test_post_user_with_invalid_parameters_returns_error():
@@ -69,7 +73,7 @@ def test_post_user_with_invalid_parameters_returns_error():
 
 
 def test_get_user_by_id_with_no_users_return_not_found_error():
-    response = client.get("/users/1")
+    response = client.get(f"/users/{uuid4()}")
     response_json = response.json()
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -80,13 +84,26 @@ def test_get_user_by_id_with_no_users_return_not_found_error():
     assert response_json["instance"]
 
 
-def test_get_user_by_id_returns_user_if_user_exists():
-    user = User(**test_user.model_dump(), id="1")
-    insert_user(user)
+@pytest.mark.anyio
+async def test_get_user_by_id_returns_user_if_user_exists():
+    user: User = await insert_user(test_user)
 
-    response = client.get("/users/1")
+    response = client.get(f"/users/{str(user.id)}")
+
     response_json = response.json()
 
     assert response.status_code == status.HTTP_200_OK
     assert contains_values(test_user.model_dump(), response_json)
     assert response_json["id"]
+
+
+def test_get_user_by_id_with_invalid_id_format_returns_error():
+    response = client.get(f"/users/1")
+    response_json = response.json()
+
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response_json["type"]
+    assert response_json["title"]
+    assert response_json["status"] == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert response_json["detail"]
+    assert response_json["instance"]

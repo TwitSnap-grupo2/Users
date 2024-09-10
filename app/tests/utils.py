@@ -9,7 +9,3 @@ def empty_database():
 
 def contains_values(expected_values, response_dict):
     return all(item in response_dict.items() for item in expected_values.items())
-
-
-def insert_user(user: User):
-    users_db.append(user)

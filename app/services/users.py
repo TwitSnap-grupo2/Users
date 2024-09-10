@@ -1,4 +1,5 @@
 # from app.repositories.users import get_users
+from uuid import UUID
 from app.repositories.models import NewUser, User
 import app.repositories.users as db
 
@@ -12,5 +13,5 @@ async def create_user(new_user: NewUser) -> User:
     return await db.insert_user(new_user)
 
 
-async def fetch_user(id: str) -> User | None:
+async def fetch_user(id: UUID) -> User | None:
     return await db.get_user(id)
