@@ -10,3 +10,7 @@ async def fetch_users() -> list[User]:
 
 async def create_user(new_user: NewUser) -> User:
     return await db.insert_user(new_user)
+
+
+async def fetch_user(id: str) -> User | None:
+    return await db.get_user(id)

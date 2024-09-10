@@ -19,3 +19,11 @@ async def insert_user(new_user: NewUser) -> User:
     users_db.append(user)
 
     return user
+
+
+async def get_user(id: str) -> User | None:
+    for user in users_db:
+        if user.id == id:
+            return user
+
+    return None

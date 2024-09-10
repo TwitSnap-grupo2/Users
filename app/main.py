@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.controllers import users
@@ -74,6 +74,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         },
     )
 
+
+@app.exception_handler(HTTPException)
+async def validation_exception_handler(request: Request, exc: HTTPException):
+    return JSONResponse( 
+        status_code=status.HTTP_404_NOT_FOUND,
+        content={
+            "type": "about:blank",
+            "title": "Not found",
+            "status": status.HTTP_404_NOT_FOUND,
+            "detail": exc.detail,
+            "instance": str(request.url),
+        }
+    )
 
 
 app.include_router(users.router)
