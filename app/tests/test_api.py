@@ -2,7 +2,7 @@ from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
-from app.repositories.models import NewUser, User
+from app.repositories.schemas import NewUser, User
 from app.repositories.users import insert_user
 from app.tests.utils import empty_database, contains_values
 import pytest

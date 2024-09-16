@@ -1,4 +1,4 @@
-from app.repositories.models import User
+from app.repositories.schemas import User
 from app.repositories.users import users_db
 
 
