@@ -13,12 +13,6 @@ followers = Table(
 )
 
 
-# user1.followed.append(user2)  # user1 follows user2
-# session.commit()
-# --------------------------------
-# followers_of_user1 = user1.followers  # Get all users following user1
-
-
 class User(Base):
     __tablename__ = "users"
 
@@ -28,26 +22,31 @@ class User(Base):
     name = Column(String)
     location = Column(String)
 
-    goals = relationship("UsersGoals", back_populates="user")
-    interests = relationship("UserInterests", back_populates="user")
+    goals = relationship("UsersGoals", cascade="all, delete", back_populates="user")
+    interests = relationship(
+        "UserInterests", cascade="all, delete", back_populates="user"
+    )
     # Users that this user is following
     followers = relationship(
         "User",
         secondary=followers,
         primaryjoin=id == followers.c.follower_id,
         secondaryjoin=id == followers.c.followed_id,
-        # backref="followers",
+        single_parent=True,
+        cascade="all, delete",
         back_populates="followers",
     )
 
-    twitsnaps = relationship("UserTwitsnaps", back_populates="user")
+    twitsnaps = relationship(
+        "UserTwitsnaps", cascade="all, delete", back_populates="user"
+    )
 
 
 class UsersGoals(Base):
     __tablename__ = "users_goals"
 
     id_user = Column(
-        UUID, ForeignKey("users.id"), primary_key=True
+        UUID, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )  # Foreign key to User table
     goal = Column(
         String, nullable=False, primary_key=True
@@ -60,7 +59,7 @@ class UserInterests(Base):
     __tablename__ = "users_interests"
 
     id_user = Column(
-        UUID, ForeignKey("users.id"), primary_key=True
+        UUID, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )  # Foreign key to User tablInterestse
     interest = Column(
         Enum(Interests),
@@ -74,7 +73,7 @@ class UserInterests(Base):
 class UserTwitsnaps(Base):
     __tablename__ = "users_twitsnaps"
 
-    id_user = Column(UUID, ForeignKey("users.id"), primary_key=True)
+    id_user = Column(UUID, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
     id_twitsnap = Column(UUID, primary_key=True)
 
     user = relationship("User", back_populates="twitsnaps")

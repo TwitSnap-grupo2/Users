@@ -76,10 +76,6 @@ class NewUser(BaseModel):
 
 class User(NewUser):
     id: UUID
-    # interests: list[Interests]
-    # goals: list[str]
-    # followers: list[UUID]
-    # twitsnaps: list[UUID]
 
     class Config:
         orm_mode = True

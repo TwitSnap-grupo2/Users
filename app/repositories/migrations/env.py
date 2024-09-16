@@ -5,18 +5,31 @@ from sqlalchemy import pool
 
 from alembic import context
 
-import os
-from dotenv import load_dotenv
 
+# from dotenv import load_dotenv
 
-load_dotenv()
+from app.utils.config import database_url
+
+# load_dotenv()
 
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-postgres_url = os.getenv("POSTGRES_URL")
+# environment = os.getenv("ENV")
+# postgres_url = None
+
+# if environment == "production" or environment == "development":
+#     postgres_url = os.getenv("POSTGRES_URL")
+# elif environment == "test":
+#     postgres_url = os.getenv("TEST_POSTGRES_URL")
+# else:
+#     raise RuntimeError(
+#         "ENV variable not found, please especifiy one [production, development, test]"
+#     )
+postgres_url = database_url
+
 if postgres_url:
     config.set_main_option("sqlalchemy.url", postgres_url)
 

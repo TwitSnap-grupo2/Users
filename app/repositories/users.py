@@ -1,7 +1,5 @@
 # from app.repositories.schemas import NewUser, User
 from uuid import uuid4, UUID
-
-
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
@@ -46,9 +44,6 @@ def get_user_by_id(db: Session, user_id: UUID) -> models.User:
     return user
 
 
-# def create_user_item(db: Session, item: schemas.ItemCreate, user_id: int):
-#     db_item = models.Item(**item.dict(), owner_id=user_id)
-#     db.add(db_item)
-#     db.commit()
-#     db.refresh(db_item)
-#     return db_item
+def empty_users(db: Session):
+    db.query(models.User).delete()
+    db.commit()
