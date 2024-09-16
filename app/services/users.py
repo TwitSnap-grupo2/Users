@@ -1,4 +1,5 @@
 # from app.repositories.users import get_users
+from uuid import UUID
 from sqlalchemy.orm import Session
 
 from app.repositories import users, models, schemas
@@ -50,9 +51,7 @@ def create_user(db: Session, new_user: schemas.NewUser) -> schemas.User:
         raise ExistentUserError("Username is already registered")
 
 
-# async def create_user(new_user: NewUser) -> User:
-#     return await db.insert_user(new_user)
-
-
-# async def fetch_user(id: UUID) -> User | None:
-#     return await db.get_user(id)
+def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
+    user: models.User = users.get_user_by_id(db=db, user_id=id)
+    if user:
+        return __database_model_to_schema(user)
