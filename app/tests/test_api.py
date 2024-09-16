@@ -2,9 +2,8 @@ from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
-from app.repositories.models import NewUser, User
-from app.repositories.users import insert_user
-from app.tests.utils import empty_database, contains_values
+from app.repositories.schemas import NewUser, User
+from app.tests import utils
 import pytest
 
 client = TestClient(app)
@@ -24,7 +23,7 @@ test_user = NewUser(
 @pytest.fixture(autouse=True)
 def before_each():
     # clear database
-    empty_database()
+    utils.empty_database()
 
 
 def test_get_users_with_empty_database_returns_an_empty_list():
@@ -41,13 +40,12 @@ def test_post_user_returns_created_user():
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert contains_values(test_user.model_dump(), response.json())
+    assert utils.contains_values(test_user.model_dump(), response.json())
     assert response.json()["id"]
 
 
-@pytest.mark.anyio
-async def test_get_users_returns_a_list_with_the_users():
-    user = await insert_user(test_user)
+def test_get_users_returns_a_list_with_the_users():
+    user: User = utils.create_user(test_user)
     dumped_user = user.model_dump()
     dumped_user["id"] = str(dumped_user["id"])
 
@@ -85,16 +83,15 @@ def test_get_user_by_id_with_no_users_return_not_found_error():
     assert response_json["instance"]
 
 
-@pytest.mark.anyio
-async def test_get_user_by_id_returns_user_if_user_exists():
-    user: User = await insert_user(test_user)
+def test_get_user_by_id_returns_user_if_user_exists():
+    user: User = utils.create_user(test_user)
 
     response = client.get(f"/users/{str(user.id)}")
 
     response_json = response.json()
 
     assert response.status_code == status.HTTP_200_OK
-    assert contains_values(test_user.model_dump(), response_json)
+    assert utils.contains_values(test_user.model_dump(), response_json)
     assert response_json["id"]
 
 

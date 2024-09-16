@@ -14,7 +14,7 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
 # Development Stage
 FROM base AS development
 
-RUN pip install --no-cache-dir watchdog
+RUN pip install --no-cache-dir watchdog 
 
 # Expose port for development
 EXPOSE 8000

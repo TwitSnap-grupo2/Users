@@ -78,11 +78,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(HTTPException)
 async def validation_exception_handler(request: Request, exc: HTTPException):
     return JSONResponse( 
-        status_code=status.HTTP_404_NOT_FOUND,
+        status_code=exc.status_code,
         content={
             "type": "about:blank",
-            "title": "Not found",
-            "status": status.HTTP_404_NOT_FOUND,
+            "title": "Request Error",
+            "status": exc.status_code,
             "detail": exc.detail,
             "instance": str(request.url),
         }
