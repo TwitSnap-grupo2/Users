@@ -48,6 +48,19 @@ class Twitsnap(BaseModel):
         orm_mode = True
 
 
+class DatabaseUser(BaseModel):
+    email: EmailStr
+    user: str
+    name: str
+    location: (
+        str  # TODO: check if there exists a model that provides fixed geolocations
+    )
+    interests: list[Interest]
+    goals: list[Goal]
+    followers: list[Follower] = []
+    twitsnaps: list[Twitsnap] = []
+
+
 class NewUser(BaseModel):
     email: EmailStr
     user: str
@@ -55,14 +68,18 @@ class NewUser(BaseModel):
     location: (
         str  # TODO: check if there exists a model that provides fixed geolocations
     )
-    interests: list[Interest] = []
-    goals: list[Goal] = []
-    followers: list[Follower] = []
+    interests: list[Interests]
+    goals: list[str]
+    followers: list[UUID] = []
     twitsnaps: list[UUID] = []
 
 
 class User(NewUser):
     id: UUID
+    # interests: list[Interests]
+    # goals: list[str]
+    # followers: list[UUID]
+    # twitsnaps: list[UUID]
 
     class Config:
         orm_mode = True

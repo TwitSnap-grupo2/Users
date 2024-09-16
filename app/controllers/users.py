@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.repositories import models
-from app.services.users import fetch_users, create_user
+from app.services.users import ExistentUserError, fetch_users, create_user
 from sqlalchemy.orm import Session
 from app.repositories import schemas
 from app.repositories.database import engine, SessionLocal, get_db
@@ -13,12 +13,20 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 @router.get("/", response_model=list[schemas.User])
 def get_users(db: Session = Depends(get_db)):
+
     return fetch_users(db)
 
 
 @router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
 async def post_user(new_user: schemas.NewUser, db: Session = Depends(get_db)):
-    return create_user(db, new_user)
+    try:
+        user = create_user(db, new_user)
+        return user
+    except ExistentUserError as e:
+        raise HTTPException(
+            status_code=status.HTTP_428_PRECONDITION_REQUIRED,
+            detail=e.message,
+        )
 
 
 # @router.get("/{user_id}")

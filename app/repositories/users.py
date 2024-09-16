@@ -27,6 +27,7 @@ from uuid import uuid4, UUID
 #     return None
 
 
+from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -46,9 +47,12 @@ def get_users(db: Session) -> list[models.User]:
     # return db.query(models.User).offset(skip).limit(limit).all()
 
 
-def insert_user(db: Session, new_user: models.User):
-    interests_list = [schemas.Interests(interest) for interest in new_user.interests]
-
+def insert_user(db: Session, new_user: models.User) -> models.User:
+    print("Interest list: ", new_user.interests)
+    interests_list = [
+        models.UserInterests(interest=schemas.Interests(interest))
+        for interest in new_user.interests
+    ]
     db_user = models.User(
         id=uuid4(),
         email=new_user.email,
@@ -56,9 +60,7 @@ def insert_user(db: Session, new_user: models.User):
         name=new_user.name,
         location=new_user.location,
         goals=[models.UsersGoals(goal=goal) for goal in new_user.goals],
-        interests=[
-            models.UserInterests(interest=interest) for interest in interests_list
-        ],
+        interests=interests_list,
     )
 
     # db_user = models.User(**user.model_dump())
@@ -66,6 +68,18 @@ def insert_user(db: Session, new_user: models.User):
     db.commit()
     db.refresh(db_user)
     return db_user
+
+
+def get_user_by_email_or_name(db: Session, email: EmailStr, user: str):
+    return (
+        db.query(models.User)
+        .filter(models.User.email == email or models.User.user == user)
+        .first()
+    )
+
+
+def get_user_by_name(db: Session, name: str):
+    return db.query(models.User).filter(models.User.name == name).first()
 
 
 # def get_items(db: Session, skip: int = 0, limit: int = 100):
