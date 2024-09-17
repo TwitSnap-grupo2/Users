@@ -20,4 +20,3 @@ firebase_config = {
 
 firebase = pyrebase.initialize_app(firebase_config)
 
-print("Current App Name:", firebase_admin.get_app().project_id)

@@ -2,6 +2,12 @@ from app.repositories import schemas, users, database
 from app.services import users as users_service
 
 
+user = None
+
+# def test_login(user = user):
+#     if not user:
+         
+
 def empty_database():
     db = next(database.get_db())
     users.empty_users(db=db)

@@ -106,13 +106,8 @@ async def create_access_token(user_data:schemas.LoginSchema):
     email = str(user_data.email)
     password = user_data.password
     try:
-        user = firebase.auth().sign_in_with_email_and_password(
-            email = email,
-            password = password
-        )
-
-        token = user['idToken']
-
+        token = users_service.login(email=email, password=password)
+        
         return JSONResponse(
             content={
                 "token":token
