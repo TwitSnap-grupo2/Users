@@ -6,8 +6,13 @@ from app.repositories.schemas import NewUser, User
 from app.tests import utils
 import pytest
 
+# Log with test user
+utils.test_login()
+
 client = TestClient(app)
 
+
+auth_header = { "Authorization": "Bearer " + utils.token }
 
 test_user = NewUser(
     email="donpepo@test.com",
@@ -27,7 +32,7 @@ def before_each():
 
 
 def test_get_users_with_empty_database_returns_an_empty_list():
-    response = client.get("/users/")
+    response = client.get("/users/", headers=auth_header)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
@@ -36,6 +41,7 @@ def test_get_users_with_empty_database_returns_an_empty_list():
 def test_post_user_returns_created_user():
     response = client.post(
         "/users/",
+        headers=auth_header,
         json=test_user.model_dump(),
     )
 
@@ -49,7 +55,7 @@ def test_get_users_returns_a_list_with_the_users():
     dumped_user = user.model_dump()
     dumped_user["id"] = str(dumped_user["id"])
 
-    response = client.get("/users/")
+    response = client.get("/users/", headers=auth_header)
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [dumped_user]
@@ -60,7 +66,7 @@ def test_post_user_with_invalid_parameters_returns_error():
     user_dict = user.model_dump()
     user_dict["user"] = 1  # It's not a string, so the client will get an error
 
-    response = client.post("/users/", json=user_dict)
+    response = client.post("/users/", headers=auth_header, json=user_dict)
     response_json = response.json()
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -72,7 +78,7 @@ def test_post_user_with_invalid_parameters_returns_error():
 
 
 def test_get_user_by_id_with_no_users_return_not_found_error():
-    response = client.get(f"/users/{uuid4()}")
+    response = client.get(f"/users/{uuid4()}", headers=auth_header)
     response_json = response.json()
 
     assert response.status_code == status.HTTP_404_NOT_FOUND
@@ -86,7 +92,7 @@ def test_get_user_by_id_with_no_users_return_not_found_error():
 def test_get_user_by_id_returns_user_if_user_exists():
     user: User = utils.create_user(test_user)
 
-    response = client.get(f"/users/{str(user.id)}")
+    response = client.get(f"/users/{str(user.id)}", headers=auth_header)
 
     response_json = response.json()
 
@@ -96,7 +102,7 @@ def test_get_user_by_id_returns_user_if_user_exists():
 
 
 def test_get_user_by_id_with_invalid_id_format_returns_error():
-    response = client.get(f"/users/1")
+    response = client.get(f"/users/1", headers=auth_header)
     response_json = response.json()
 
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY

@@ -56,6 +56,9 @@ def get_firebase_user_from_token(
             detail="Not logged in or Invalid credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+        
+        
+        
 @router.get("/", response_model=list[schemas.User])
 def get_users(_user: Annotated[dict, Depends(get_firebase_user_from_token)], db: Session = Depends(get_db)):
     return users_service.fetch_users(db)
@@ -87,8 +90,9 @@ def create_account(user_data: schemas.SignUpSchema):
     try:
         email = str(user_data.email)
         password = user_data.password
+        # user = firebase_admin.auth.create_user(email=email, password=password)
 
-        user = firebase_admin.auth.create_user(email=email, password=password)
+        user = users_service.signup(email, password)
 
         return JSONResponse(
             content={

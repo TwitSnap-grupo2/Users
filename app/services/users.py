@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.repositories import users, models, schemas
 from app.repositories.database import SessionLocal, engine
 from app.utils.firebase import firebase
+import firebase_admin
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -56,6 +57,10 @@ def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
     user: models.User = users.get_user_by_id(db=db, user_id=id)
     if user:
         return __database_model_to_schema(user)
+
+
+def signup(email: str, password: str): 
+    return firebase_admin.auth.create_user(email=email, password=password)
 
 
 def login(email: str, password: str) -> str: 
