@@ -6,6 +6,8 @@ from app.repositories import users, models, schemas
 from app.repositories.database import SessionLocal, engine
 from app.utils.firebase import firebase
 import firebase_admin
+from pydantic_extra_types.country import CountryAlpha3
+
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -59,14 +61,55 @@ def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
         return __database_model_to_schema(user)
 
 
-def signup(email: str, password: str): 
-    return firebase_admin.auth.create_user(email=email, password=password)
+def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User: 
+    user = users.get_user_by_email_or_name(
+        db=db, email=new_user.email, user=new_user.user
+    )
+    
+    if not user:
+        _res = firebase_admin.auth.create_user(email=str(new_user.email), password=new_user.password)
+        db_user = users.insert_user(db=db, new_user=new_user)
+        return __database_model_to_schema(db_user)
+
+    # If here, then the user exists, so check for email or user repetition
+    if user.email == new_user.email:
+        raise ExistentUserError("Mail is already registered")
+    if user.user == new_user.user:
+        raise ExistentUserError("Username is already registered")
 
 
-def login(email: str, password: str) -> str: 
-    user = firebase.auth().sign_in_with_email_and_password(
+
+def login(db: Session, email: str, password: str): 
+    firebase_user = firebase.auth().sign_in_with_email_and_password(
         email = email,
         password = password
     )
-    
-    return user['idToken']
+    # TODO: Si esto falla deberia des-registrar al usuario de firebase
+    user = __database_model_to_schema(users.get_user_by_email(db=db, email=email))
+  
+    logged_user = schemas.LoggedUser(**user.model_dump(), token=firebase_user['idToken'])
+
+    return logged_user
+
+
+def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User: 
+    return users.set_location(db, user_id, location)
+
+
+def set_interests(db: Session, user_id: UUID, interests: list[schemas.Interests]) -> schemas.User: 
+    #TODO: Si esto solo se puede hacer una vez: buenisimo, sino hay que checkear si el interes ya esta en el user o no
+    interests_list = [
+        models.UserInterests(interest=schemas.Interests(interest))
+        for interest in interests
+    ]
+    return __database_model_to_schema(users.set_interests(db, user_id, interests_list))
+
+
+
+def set_goals(db: Session, user_id: UUID, goals: list[str]) -> schemas.User: 
+    goals_list = [
+        models.UsersGoals(goal=goal)
+        for goal in goals
+    ]
+    return __database_model_to_schema(users.set_goals(db, user_id, goals_list))
+

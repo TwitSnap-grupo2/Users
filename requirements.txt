@@ -9,3 +9,5 @@ psycopg2-binary>=2.9.9
 firebase-admin==6.5.0
 pyrebase4
 setuptools
+pydantic-extra-types==2.9.0
+pycountry==24.6.1 

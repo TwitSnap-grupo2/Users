@@ -53,10 +53,10 @@ class DatabaseUser(BaseModel):
     user: str
     name: str
     location: (
-        str  # TODO: check if there exists a model that provides fixed geolocations
-    )
-    interests: list[Interest]
-    goals: list[Goal]
+        str  
+    ) = str()
+    interests: list[Interest] = []
+    goals: list[Goal] = []
     followers: list[Follower] = []
     twitsnaps: list[Twitsnap] = []
 
@@ -65,17 +65,18 @@ class NewUser(BaseModel):
     email: EmailStr
     user: str
     name: str
-    location: (
-        str  # TODO: check if there exists a model that provides fixed geolocations
-    )
-    interests: list[Interests]
-    goals: list[str]
-    followers: list[UUID] = []
-    twitsnaps: list[UUID] = []
+
 
 
 class User(NewUser):
     id: UUID
+    location: (
+        str  # TODO: change this for: CountryAlpha2 (Pydantic)
+    ) 
+    interests: list[Interests] 
+    goals: list[str] 
+    followers: list[UUID] 
+    twitsnaps: list[UUID] 
 
     class Config:
         orm_mode = True
@@ -84,8 +85,13 @@ class User(NewUser):
 class SignUpSchema(BaseModel):
     email: EmailStr
     password: str
-
+    user: str
+    name: str
 
 class LoginSchema(BaseModel):
     email: EmailStr
     password: str
+
+
+class LoggedUser(User):
+    token: str
