@@ -1,5 +1,10 @@
 import os
 from dotenv import load_dotenv
+import pathlib
+
+basedir = pathlib.Path(__file__).parents[1]
+load_dotenv(basedir / ".env")
+
 
 load_dotenv()
 
@@ -16,3 +21,14 @@ else:
     raise RuntimeError(
         "ENV variable not found, please especifiy one [production, development, test]"
     )
+
+
+
+apiKey= os.getenv("apiKey")
+authDomain= os.getenv("authDomain")
+projectId= os.getenv("projectId")
+storageBucket=os.getenv("storageBucket")
+messagingSenderId = os.getenv("messagingSenderId")
+appId = os.getenv("appId")
+measurementId = os.getenv("measurementId")
+databaseURL = ""

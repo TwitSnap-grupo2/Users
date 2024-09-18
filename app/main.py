@@ -1,9 +1,7 @@
-from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from app.controllers import users
-
-
+from fastapi import FastAPI, HTTPException, Request, status
 app = FastAPI()
 
 
@@ -87,6 +85,11 @@ async def validation_exception_handler(request: Request, exc: HTTPException):
             "instance": str(request.url),
         }
     )
+    
+
 
 
 app.include_router(users.router)
+
+
+
