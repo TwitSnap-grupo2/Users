@@ -61,13 +61,15 @@ def empty_users(db: Session):
     db.commit()
 
 
-def set_location(db: Session, user_id: UUID, location: str): 
-    updated_user = db.query(models.User).filter(models.User.id == user_id).update({'location': location})
-    db.commit()
-    return updated_user
-    
+def set_location(db: Session, user_id: UUID, location: str) -> models.User: 
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user:
+        user.location = location  
+        db.commit()
+        db.refresh(user)  
+    return user
 
-def set_interests(db: Session, user_id: UUID, interests: list[models.UserInterests]): 
+def set_interests(db: Session, user_id: UUID, interests: list[models.UserInterests]) -> models.User: 
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user:
         user.interests.extend(interests)
