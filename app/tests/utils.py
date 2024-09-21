@@ -1,7 +1,6 @@
 import os
 from app.repositories import schemas, users, database
 from app.services import users as users_service
-from firebase_admin import auth
 
 token = None
 
@@ -11,16 +10,16 @@ test_user=os.getenv("TEST_USER")
 test_name=os.getenv("TEST_NAME")
 
 
-def test_login():
-    global token
-    if not token:
-        try: 
-            new_user = schemas.SignUpSchema(email=test_email, password=test_password, user=test_user, name=test_name) 
-            users_service.signup(db=next(database.get_db()),  new_user=new_user)        
-        except (auth.EmailAlreadyExistsError, users_service.ExistentUserError):
-            pass 
-        finally:
-            token = users_service.login(db=next(database.get_db()), email=test_email, password=test_password).token
+# def test_login():
+#     global token
+#     if not token:
+#         try: 
+#             new_user = schemas.SignUpSchema(email=test_email, password=test_password, user=test_user, name=test_name) 
+#             users_service.signup(db=next(database.get_db()),  new_user=new_user)        
+#         except (auth.EmailAlreadyExistsError, users_service.ExistentUserError):
+#             pass 
+#         finally:
+#             token = users_service.login(db=next(database.get_db()), email=test_email, password=test_password).token
 
 def empty_database():
     db = next(database.get_db())
