@@ -27,5 +27,3 @@ services:
     environment:
       - ENV=test
     command: pytest -s 
-    depends_on:
-      - app
