@@ -26,4 +26,5 @@ services:
       - .:/code
     environment:
       - ENV=test
+      - TEST_POSTGRES_URL= ${TEST_POSTGRES_URL}
     command: pytest -s 
