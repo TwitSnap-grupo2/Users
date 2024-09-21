@@ -67,7 +67,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "type": "about:blank",
             "title": "Validation Error",
             "status": status.HTTP_422_UNPROCESSABLE_ENTITY,
-            "detail": f"{exc._errors[0]["msg"]}, got: {exc._errors[0]["input"]}",
+            "detail": f'{exc._errors[0]["msg"]}, got: {exc._errors[0]["input"]}',
             "instance": str(request.url),
         },
     )

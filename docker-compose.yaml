@@ -26,6 +26,6 @@ services:
       - .:/code
     environment:
       - ENV=test
-    command: python3 -m unittest && pytest -s 
+    command: pytest -s 
     depends_on:
       - app

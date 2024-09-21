@@ -49,6 +49,7 @@ class Twitsnap(BaseModel):
 
 
 class DatabaseUser(BaseModel):
+    id: UUID
     email: EmailStr
     user: str
     name: str
@@ -95,3 +96,9 @@ class LoginSchema(BaseModel):
 
 class LoggedUser(User):
     token: str
+    
+    
+from pydantic_extra_types.country import CountryAlpha3
+
+class Location(BaseModel): 
+    location: CountryAlpha3

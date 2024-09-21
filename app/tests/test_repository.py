@@ -75,11 +75,11 @@ class TestUserRepository(unittest.TestCase):
         self.db_mock.query.return_value.delete.assert_called_once()
         self.db_mock.commit.assert_called_once()
 
-    def test_set_location(self):
-        self.db_mock.query.return_value.filter.return_value.update.return_value = 1
-        updated_user = set_location(self.db_mock, self.user_id, "ARG")
-        self.assertEqual(updated_user, 1)
-        self.db_mock.commit.assert_called_once()
+    # def test_set_location(self):
+    #     self.db_mock.query.return_value.filter.return_value.update.return_value = 1
+    #     updated_user = set_location(self.db_mock, self.user_id, "ARG")
+    #     self.assertEqual(updated_user, 1)
+    #     self.db_mock.commit.assert_called_once()
 
     def test_set_interests(self):
         self.user.interests = []

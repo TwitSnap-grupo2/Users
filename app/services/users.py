@@ -5,7 +5,6 @@ from sqlalchemy.orm import Session
 from app.repositories import users, models, schemas
 from app.repositories.database import SessionLocal, engine
 from app.utils.firebase import firebase
-import firebase_admin
 from pydantic_extra_types.country import CountryAlpha3
 
 
@@ -27,7 +26,7 @@ def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
         name=user.name,
         location=user.location,
         goals=[g.goal for g in user.goals],
-        interests=[interest.interest for interest in user.interests],
+        interests=[schemas.Interests(interest.interest) for interest in user.interests],
         twitsnaps=[twitsnap.id_twitsnap for twitsnap in user.twitsnaps],
         followers=[follower.follower_id for follower in user.followers],
     )
@@ -67,7 +66,7 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
     )
     
     if not user:
-        _res = firebase_admin.auth.create_user(email=str(new_user.email), password=new_user.password)
+        # _res = firebase_admin.auth.create_user(email=str(new_user.email), password=new_user.password)
         db_user = users.insert_user(db=db, new_user=new_user)
         return __database_model_to_schema(db_user)
 
@@ -79,21 +78,21 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
 
 
 
-def login(db: Session, email: str, password: str): 
-    firebase_user = firebase.auth().sign_in_with_email_and_password(
-        email = email,
-        password = password
-    )
-    # TODO: Si esto falla deberia des-registrar al usuario de firebase
-    user = __database_model_to_schema(users.get_user_by_email(db=db, email=email))
-  
-    logged_user = schemas.LoggedUser(**user.model_dump(), token=firebase_user['idToken'])
+# def login(db: Session, email: str, password: str): 
+#     firebase_user = firebase.auth().sign_in_with_email_and_password(
+#         email = email,
+#         password = password
+#     )
+#     # TODO: Si esto falla deberia des-registrar al usuario de firebase
+#     user = __database_model_to_schema(users.get_user_by_email(db=db, email=email))
 
-    return logged_user
+#     logged_user = schemas.LoggedUser(**user.model_dump(), token=firebase_user['idToken'])
+
+#     return logged_user
 
 
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User: 
-    return users.set_location(db, user_id, location)
+    return users.set_location(db, user_id, str(location))
 
 
 def set_interests(db: Session, user_id: UUID, interests: list[schemas.Interests]) -> schemas.User: 
