@@ -1,10 +1,8 @@
 # from app.repositories.users import get_users
 from uuid import UUID
 from sqlalchemy.orm import Session
-
 from app.repositories import users, models, schemas
-from app.repositories.database import SessionLocal, engine
-from app.utils.firebase import firebase
+from app.repositories.database import  engine
 from pydantic_extra_types.country import CountryAlpha3
 
 
