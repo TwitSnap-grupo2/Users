@@ -1,0 +1,55 @@
+name: Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PORT: 3000
+      NODE_ENV: test
+      TEST_POSTGRES_URL: ${{ secrets.TEST_POSTGRES_URL }}
+    steps:
+      # - name: Checkout repository
+      - uses: actions/checkout@v3
+      - uses: hoverkraft-tech/compose-action@v2.0.2
+        with:
+          # Description: Path to compose file(s). It can be a list of files. It can be
+          # absolute or relative to the current working directory (cwd).
+          #
+          # Default: ./docker-compose.yml
+          compose-file: "./docker-compose.yml"
+
+          # Description: Services to perform docker-compose up.
+          #
+          services: "test"
+
+          # Description: Additional options to pass to `docker-compose up` command.
+          #
+          # Default:
+          up-flags: "--build --exit-code-from test"
+
+          # Description: Additional options to pass to `docker-compose down` command.
+          #
+          # Default:
+          down-flags: ""
+
+          # Description: Additional options to pass to `docker-compose` command.
+          #
+          # Default:
+          compose-flags: ""
+
+          # Description: Current working directory
+          #
+          # Default: ${{ github.workspace }}
+          cwd: ""
+
+      - name: Trigger deployment
+        if: ${{ github.event_name == 'push' }}
+        run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}

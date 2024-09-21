@@ -9,7 +9,7 @@ services:
       - "8000:8000"
     environment:
       - ENV=development
-
+      # - PORT: 
   app-prod:
     build:
       context: .
@@ -26,6 +26,6 @@ services:
       - .:/code
     environment:
       - ENV=test
-    command: pytest -s 
+    command: python3 -m unittest && pytest -s 
     depends_on:
       - app
