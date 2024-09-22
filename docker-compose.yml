@@ -10,18 +10,16 @@ services:
     environment:
       ENV: development
       PORT: ${PORT}
-    # command: tail -f /dev/null  
-
+      POSTGRES_URL: ${POSTGRES_URL}
   app-prod:
     build:
       context: .
       target: production
-    
-    # ports:
-    #   - "80:80"
     environment:
       ENV: production
       PORT: ${PORT}
+      POSTGRES_URL: ${POSTGRES_URL}
+
   test:
     build:
       context: .

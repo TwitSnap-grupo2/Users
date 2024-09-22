@@ -6,17 +6,17 @@ basedir = pathlib.Path(__file__).parents[1]
 load_dotenv(basedir / ".env")
 
 
-load_dotenv()
 
 env = os.getenv("ENV")
-
 port = os.getenv("PORT")
 
 database_url = None
 
 
 if env == "production" or env == "development":
+    print("Entered here...")
     database_url = os.getenv("POSTGRES_URL")
+    print("Database: ", database_url)
 elif env == "test":
     database_url = os.getenv("TEST_POSTGRES_URL")
 else:
