@@ -7,9 +7,9 @@ services:
       - key: POSTGRES_URL
         sync: false
       - key: ENV
-        value: production
+        sync: false
     dockerfilePath: ./Dockerfile
     dockerContext: .
-    dockerCommand: docker build -t users --target production . && docker run -d -e POSTGRES_URL=${POSTGRES_URL} -e ENV=production users
+    dockerCommand: docker build -t users --target production . && docker run -d -e POSTGRES_URL=${POSTGRES_URL} users
     autoDeploy: true # Automatically deploy new changes
 
