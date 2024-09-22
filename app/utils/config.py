@@ -10,6 +10,8 @@ load_dotenv()
 
 env = os.getenv("ENV")
 
+port = os.getenv("PORT")
+
 database_url = None
 
 

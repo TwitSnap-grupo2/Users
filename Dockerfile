@@ -9,7 +9,7 @@ COPY ./app /code/app
 
 FROM base AS production
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["python3", "-m", "app.main"]
 
 # Development Stage
 FROM base AS development
@@ -20,4 +20,4 @@ RUN pip install --no-cache-dir watchdog
 EXPOSE 8000
 
 # Command for development with auto-reload
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["python3", "-m", "app.main"]

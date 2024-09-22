@@ -1,7 +1,10 @@
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from app.controllers import users
+from .controllers import users 
+import uvicorn
 from fastapi import FastAPI, HTTPException, Request, status
+from .utils.config import env, port
+
 app = FastAPI()
 
 
@@ -93,3 +96,11 @@ app.include_router(users.router)
 
 
 
+
+if __name__ == "__main__": 
+    uvicorn.run(
+        "app.main:app",
+        host="0.0.0.0", 
+        port=int(port),
+        reload=True if env == "development" else False
+    )

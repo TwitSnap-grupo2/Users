@@ -4,11 +4,11 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.responses import JSONResponse
 from pydantic import Field
-from app.repositories import models
-from app.services import users as users_service
+from ..repositories import models
+from ..services import users as users_service
 from sqlalchemy.orm import Session
-from app.repositories import schemas
-from app.repositories.database import engine, get_db
+from ..repositories import schemas
+from ..repositories.database import engine, get_db
 from firebase_admin import auth
 from typing import Annotated
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
