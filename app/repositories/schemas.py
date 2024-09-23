@@ -56,7 +56,7 @@ class DatabaseUser(BaseModel):
     location: (
         str  
     ) = str()
-    interests: list[Interest] = []
+    interests: list[Interest] = [] 
     goals: list[Goal] = []
     followers: list[Follower] = []
     twitsnaps: list[Twitsnap] = []
@@ -102,3 +102,6 @@ from pydantic_extra_types.country import CountryAlpha3
 
 class Location(BaseModel): 
     location: CountryAlpha3
+    
+    
+    

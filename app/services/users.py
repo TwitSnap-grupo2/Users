@@ -76,19 +76,6 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
 
 
 
-# def login(db: Session, email: str, password: str): 
-#     firebase_user = firebase.auth().sign_in_with_email_and_password(
-#         email = email,
-#         password = password
-#     )
-#     # TODO: Si esto falla deberia des-registrar al usuario de firebase
-#     user = __database_model_to_schema(users.get_user_by_email(db=db, email=email))
-
-#     logged_user = schemas.LoggedUser(**user.model_dump(), token=firebase_user['idToken'])
-
-#     return logged_user
-
-
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User: 
     return users.set_location(db, user_id, str(location))
 
