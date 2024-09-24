@@ -6,7 +6,7 @@ services:
     volumes:
       - .:/code
     ports:
-      - "3000:${PORT}"
+      - "${PORT}:${PORT}"
     environment:
       ENV: development
       PORT: ${PORT}
@@ -15,11 +15,12 @@ services:
     build:
       context: .
       target: production
+    ports:
+      - "${PORT}:${PORT}"
     environment:
       ENV: production
       PORT: ${PORT}
       POSTGRES_URL: ${POSTGRES_URL}
-
   test:
     build:
       context: .

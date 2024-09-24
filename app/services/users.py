@@ -1,22 +1,15 @@
-# from app.repositories.users import get_users
 from uuid import UUID
 from sqlalchemy.orm import Session
-from app.repositories import users, models, schemas
+from app.repositories import users, models
 from app.repositories.database import  engine
 from pydantic_extra_types.country import CountryAlpha3
+from app.utils import schemas
+from app.utils.errors import ExistentUserError
 
 
 models.Base.metadata.create_all(bind=engine)
 
-
-class ExistentUserError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(message)
-
-
 def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
-
     return schemas.User(
         id=user.id,
         email=user.email,
@@ -35,21 +28,6 @@ def fetch_users(db: Session) -> list[schemas.User]:
     db_users: list[schemas.DatabaseUser] = users.get_users(db)
 
     return [__database_model_to_schema(user) for user in db_users]
-
-
-def create_user(db: Session, new_user: schemas.NewUser) -> schemas.User:
-    user = users.get_user_by_email_or_name(
-        db=db, email=new_user.email, user=new_user.user
-    )
-    if not user:
-        db_user = users.insert_user(db=db, new_user=new_user)
-        return __database_model_to_schema(db_user)
-
-    # If here, then the user exists, so check for email or user repetition
-    if user.email == new_user.email:
-        raise ExistentUserError("Mail is already registered")
-    if user.user == new_user.user:
-        raise ExistentUserError("Username is already registered")
 
 
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
@@ -76,25 +54,11 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
 
 
 
-# def login(db: Session, email: str, password: str): 
-#     firebase_user = firebase.auth().sign_in_with_email_and_password(
-#         email = email,
-#         password = password
-#     )
-#     # TODO: Si esto falla deberia des-registrar al usuario de firebase
-#     user = __database_model_to_schema(users.get_user_by_email(db=db, email=email))
-
-#     logged_user = schemas.LoggedUser(**user.model_dump(), token=firebase_user['idToken'])
-
-#     return logged_user
-
-
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User: 
-    return users.set_location(db, user_id, str(location))
+    return __database_model_to_schema(users.set_location(db, user_id, str(location)))
 
 
 def set_interests(db: Session, user_id: UUID, interests: list[schemas.Interests]) -> schemas.User: 
-    #TODO: Si esto solo se puede hacer una vez: buenisimo, sino hay que checkear si el interes ya esta en el user o no
     interests_list = [
         models.UserInterests(interest=schemas.Interests(interest))
         for interest in interests

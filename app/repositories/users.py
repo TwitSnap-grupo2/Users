@@ -3,6 +3,8 @@ from uuid import uuid4, UUID
 from pydantic import EmailStr
 from sqlalchemy.orm import Session
 
+from app.utils.errors import UserNotFound
+
 from . import models
 
 
@@ -63,25 +65,31 @@ def empty_users(db: Session):
 
 def set_location(db: Session, user_id: UUID, location: str) -> models.User: 
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user:
-        user.location = location  
-        db.commit()
-        db.refresh(user)  
+    if not user: 
+        raise UserNotFound()
+
+    user.location = location  
+    db.commit()
+    db.refresh(user)  
     return user
 
 def set_interests(db: Session, user_id: UUID, interests: list[models.UserInterests]) -> models.User: 
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user:
-        user.interests.extend(interests)
-        db.commit()
-        db.refresh(user)
+    if not user:
+        raise UserNotFound()
+
+    user.interests.extend(interests)
+    db.commit()
+    db.refresh(user)
     return user
 
 def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]): 
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if user:
-        user.goals.extend(goals)
-        db.commit()
-        db.refresh(user)
+    if not user:
+        raise UserNotFound()
+    
+    user.goals.extend(goals)
+    db.commit()
+    db.refresh(user)
     return user
 

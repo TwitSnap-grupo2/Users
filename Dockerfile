@@ -16,8 +16,5 @@ FROM base AS development
 
 RUN pip install --no-cache-dir watchdog 
 
-# Expose port for development
-EXPOSE 8000
-
 # Command for development with auto-reload
 CMD ["python3", "-m", "app.main"]
