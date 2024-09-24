@@ -4,6 +4,7 @@ from app.repositories import users, models
 from app.repositories.database import  engine
 from pydantic_extra_types.country import CountryAlpha3
 from app.utils import schemas
+from pydantic import EmailStr
 from app.utils.errors import ExistentUserError
 
 
@@ -32,6 +33,11 @@ def fetch_users(db: Session) -> list[schemas.User]:
 
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
     user: models.User = users.get_user_by_id(db=db, user_id=id)
+    if user:
+        return __database_model_to_schema(user)
+
+def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
+    user: models.User = users.get_user_by_email(db=db, email=email)
     if user:
         return __database_model_to_schema(user)
 

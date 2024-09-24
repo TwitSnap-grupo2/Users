@@ -6,6 +6,7 @@ from ..services import users as users_service
 from sqlalchemy.orm import Session
 from ..utils import schemas
 from ..repositories.database import engine, get_db
+from pydantic import EmailStr
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -24,6 +25,12 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+@router.get("/email/{email}", response_model=schemas.User)
+def get_user(email: EmailStr, db: Session = Depends(get_db)) -> schemas.User:
+    user = users_service.fetch_user_by_email(db=db, email=email)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 @router.post("/signup", status_code=status.HTTP_201_CREATED, response_model=schemas.User)
 def create_account(user_data: schemas.SignUpSchema, db: Session = Depends(get_db)):
