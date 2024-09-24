@@ -39,20 +39,6 @@ def fetch_users(db: Session) -> list[schemas.User]:
     return [__database_model_to_schema(user) for user in db_users]
 
 
-def create_user(db: Session, new_user: schemas.NewUser) -> schemas.User:
-    user = users.get_user_by_email_or_name(
-        db=db, email=new_user.email, user=new_user.user
-    )
-    if not user:
-        db_user = users.insert_user(db=db, new_user=new_user)
-        return __database_model_to_schema(db_user)
-
-    # If here, then the user exists, so check for email or user repetition
-    if user.email == new_user.email:
-        raise ExistentUserError("Mail is already registered")
-    if user.user == new_user.user:
-        raise ExistentUserError("Username is already registered")
-
 
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
     user: models.User = users.get_user_by_id(db=db, user_id=id)

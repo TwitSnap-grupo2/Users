@@ -56,7 +56,7 @@ def set_interests(user_id: UUID, interest_list: list[schemas.Interests], db: Ses
 
 
 @router.post("/goals/{user_id}", status_code=status.HTTP_201_CREATED)
-def set_goals(user_id: UUID, goals_list:list[str], db: Session = Depends(get_db)): 
+def set_goals(user_id: UUID, goals_list: list[str], db: Session = Depends(get_db)): 
     updated_user = users_service.set_goals(db, user_id, goals_list)
     if not updated_user: 
         raise HTTPException(status_code=404, detail="No user found")
