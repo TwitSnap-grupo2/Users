@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, String, UUID, Table, Enum, text
 from sqlalchemy.orm import relationship
 
 from ..repositories.database import Base
-from ..repositories.schemas import Interests
+from ..utils.schemas import Interests
 
 # Association table for the many-to-many relationship
 followers = Table(

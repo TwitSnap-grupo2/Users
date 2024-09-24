@@ -3,7 +3,7 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
 from ..repositories import models
 from ..services import users as users_service
 from sqlalchemy.orm import Session
-from ..repositories import schemas
+from ..utils import schemas
 from ..repositories.database import engine, get_db
 
 

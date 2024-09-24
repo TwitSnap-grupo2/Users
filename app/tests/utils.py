@@ -1,6 +1,7 @@
 import os
-from app.repositories import schemas, users, database
+from app.repositories import users, database
 from app.services import users as users_service
+from app.utils import schemas
 
 token = None
 

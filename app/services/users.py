@@ -1,9 +1,11 @@
 # from app.repositories.users import get_users
 from uuid import UUID
 from sqlalchemy.orm import Session
-from app.repositories import users, models, schemas
+from app.repositories import users, models
 from app.repositories.database import  engine
 from pydantic_extra_types.country import CountryAlpha3
+
+from app.utils import schemas
 
 
 models.Base.metadata.create_all(bind=engine)

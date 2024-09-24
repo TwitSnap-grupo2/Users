@@ -1,8 +1,7 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from uuid import uuid4
-from pydantic import EmailStr
-from app.repositories import schemas, models
+from app.repositories import models
 from app.repositories.users import (
     get_users,
     insert_user,
@@ -14,6 +13,7 @@ from app.repositories.users import (
     set_interests,
     set_goals
 )
+from app.utils import schemas
 
 
 class TestUserRepository(unittest.TestCase):
@@ -75,11 +75,12 @@ class TestUserRepository(unittest.TestCase):
         self.db_mock.query.return_value.delete.assert_called_once()
         self.db_mock.commit.assert_called_once()
 
-    # def test_set_location(self):
-    #     self.db_mock.query.return_value.filter.return_value.update.return_value = 1
-    #     updated_user = set_location(self.db_mock, self.user_id, "ARG")
-    #     self.assertEqual(updated_user, 1)
-    #     self.db_mock.commit.assert_called_once()
+    def test_set_location(self):
+        self.user.location = ""
+        self.db_mock.query.return_value.filter.return_value.first.return_value = self.user
+        location = "ARG"
+        updated_user = set_location(self.db_mock, self.user_id, location=location)
+        self.assertEqual(updated_user.location, location)
 
     def test_set_interests(self):
         self.user.interests = []

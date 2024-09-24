@@ -2,7 +2,7 @@ from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
-from app.repositories.schemas import NewUser, User, SignUpSchema
+from app.utils.schemas import NewUser, User, SignUpSchema
 from app.tests import utils
 import pytest
 
