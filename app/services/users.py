@@ -1,21 +1,15 @@
-# from app.repositories.users import get_users
 from uuid import UUID
 from sqlalchemy.orm import Session
 from app.repositories import users, models
 from app.repositories.database import  engine
 from pydantic_extra_types.country import CountryAlpha3
-
 from app.utils import schemas
 from app.utils.errors import ExistentUserError
 
 
 models.Base.metadata.create_all(bind=engine)
 
-
-
-
 def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
-
     return schemas.User(
         id=user.id,
         email=user.email,
@@ -34,7 +28,6 @@ def fetch_users(db: Session) -> list[schemas.User]:
     db_users: list[schemas.DatabaseUser] = users.get_users(db)
 
     return [__database_model_to_schema(user) for user in db_users]
-
 
 
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
@@ -62,11 +55,10 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
 
 
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User: 
-    return users.set_location(db, user_id, str(location))
+    return __database_model_to_schema(users.set_location(db, user_id, str(location)))
 
 
 def set_interests(db: Session, user_id: UUID, interests: list[schemas.Interests]) -> schemas.User: 
-    #TODO: Si esto solo se puede hacer una vez: buenisimo, sino hay que checkear si el interes ya esta en el user o no
     interests_list = [
         models.UserInterests(interest=schemas.Interests(interest))
         for interest in interests

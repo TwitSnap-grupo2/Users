@@ -87,6 +87,7 @@ def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise UserNotFound()
+    
     user.goals.extend(goals)
     db.commit()
     db.refresh(user)

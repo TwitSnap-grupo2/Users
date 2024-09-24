@@ -1,7 +1,10 @@
 from pydantic import BaseModel, EmailStr
 from enum import Enum
 from uuid import UUID
+from pydantic_extra_types.country import CountryAlpha3
 
+
+# Pydantic validations 
 
 class Interests(str, Enum):
     sports = "sports"
@@ -20,28 +23,28 @@ class UserSummary(BaseModel):
         orm_mode = True
 
 
-class Goal(BaseModel):
+class DatabaseGoal(BaseModel):
     goal: str
 
     class Config:
         orm_mode = True
 
 
-class Interest(BaseModel):
+class DatabaseInterest(BaseModel):
     interest: Interests
 
     class Config:
         orm_mode = True
 
 
-class Follower(BaseModel):
+class DatabaseFollower(BaseModel):
     follower_id: UUID
 
     class Config:
         orm_mode = True
 
 
-class Twitsnap(BaseModel):
+class DatabaseTwitsnap(BaseModel):
     id_twitsnap: UUID
 
     class Config:
@@ -56,10 +59,10 @@ class DatabaseUser(BaseModel):
     location: (
         str  
     ) = str()
-    interests: list[Interest] = [] 
-    goals: list[Goal] = []
-    followers: list[Follower] = []
-    twitsnaps: list[Twitsnap] = []
+    interests: list[DatabaseInterest] = [] 
+    goals: list[DatabaseGoal] = []
+    followers: list[DatabaseFollower] = []
+    twitsnaps: list[DatabaseTwitsnap] = []
 
 
 class NewUser(BaseModel):
@@ -68,19 +71,13 @@ class NewUser(BaseModel):
     name: str
 
 
-
 class User(NewUser):
     id: UUID
-    location: (
-        str  # TODO: change this for: CountryAlpha2 (Pydantic)
-    ) 
+    location: str  
     interests: list[Interests] 
     goals: list[str] 
     followers: list[UUID] 
     twitsnaps: list[UUID] 
-
-    class Config:
-        orm_mode = True
 
 
 class SignUpSchema(BaseModel):
@@ -98,7 +95,6 @@ class LoggedUser(User):
     token: str
     
     
-from pydantic_extra_types.country import CountryAlpha3
 
 class Location(BaseModel): 
     location: CountryAlpha3
