@@ -6,15 +6,12 @@ from app.repositories.database import  engine
 from pydantic_extra_types.country import CountryAlpha3
 
 from app.utils import schemas
+from app.utils.errors import ExistentUserError
 
 
 models.Base.metadata.create_all(bind=engine)
 
 
-class ExistentUserError(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(message)
 
 
 def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:

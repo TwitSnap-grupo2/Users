@@ -1,5 +1,7 @@
 from uuid import UUID
 from fastapi import APIRouter, Body, Depends, HTTPException, Path, status
+
+from app.utils.errors import UserNotFound
 from ..repositories import models
 from ..services import users as users_service
 from sqlalchemy.orm import Session
@@ -40,24 +42,23 @@ def set_location(user_id: UUID, location: schemas.Location = Body(example={"loca
     """ 
     - **location**: Location must be in  ISO 3166-1 alpha-3 format, e.g: ARG for Argentina.
     """
-
-    updated_user =  users_service.set_location(db, user_id, location.location) 
-    if not updated_user: 
-        raise HTTPException(status_code=404, detail="No user found")
-    return updated_user
+    try:          
+        return users_service.set_location(db, user_id, location.location)
+    except UserNotFound as e: 
+        raise HTTPException(status_code=404, detail=e.message)
 
 
 @router.post("/interests/{user_id}", status_code=status.HTTP_201_CREATED)
 def set_interests(user_id: UUID, interest_list: list[schemas.Interests], db: Session = Depends(get_db)): 
-    updated_user = users_service.set_interests(db, user_id, interest_list)
-    if not updated_user: 
-        raise HTTPException(status_code=404, detail="No user found")
-    return updated_user
+    try: 
+        return users_service.set_interests(db, user_id, interest_list)
+    except UserNotFound as e: 
+        raise HTTPException(status_code=404, detail=e.message)
 
 
 @router.post("/goals/{user_id}", status_code=status.HTTP_201_CREATED)
 def set_goals(user_id: UUID, goals_list: list[str], db: Session = Depends(get_db)): 
-    updated_user = users_service.set_goals(db, user_id, goals_list)
-    if not updated_user: 
-        raise HTTPException(status_code=404, detail="No user found")
-    return updated_user
+    try: 
+        return users_service.set_goals(db, user_id, goals_list)
+    except UserNotFound as e: 
+        raise HTTPException(status_code=404, detail=e.message) 
