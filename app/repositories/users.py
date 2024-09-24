@@ -66,7 +66,9 @@ def set_location(db: Session, user_id: UUID, location: str) -> models.User:
     if user:
         user.location = location  
         db.commit()
-        db.refresh(user)  
+        db.refresh(user)
+    else: 
+        return None   
     return user
 
 def set_interests(db: Session, user_id: UUID, interests: list[models.UserInterests]) -> models.User: 
@@ -75,6 +77,8 @@ def set_interests(db: Session, user_id: UUID, interests: list[models.UserInteres
         user.interests.extend(interests)
         db.commit()
         db.refresh(user)
+    else:
+        return None
     return user
 
 def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]): 
@@ -83,5 +87,7 @@ def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]):
         user.goals.extend(goals)
         db.commit()
         db.refresh(user)
+    else:
+        return None
     return user
 
