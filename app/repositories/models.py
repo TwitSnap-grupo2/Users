@@ -26,24 +26,25 @@ class User(Base):
     interests = relationship(
         "UserInterests", cascade="all, delete", back_populates="user"
     )
-
-    followings = relationship(
-        "User",
-        secondary=followers,
-        primaryjoin=id == followers.c.follower_id,  # This user is the follower
-        secondaryjoin=id == followers.c.followed_id,  # The other user is followed
-        backref="followed_by",  # Allows accessing followers from the followed user
-        cascade="all, delete",
-    )
-
-    # Users who are following this user
+    # Users that this user is following
     followers = relationship(
         "User",
         secondary=followers,
-        primaryjoin=id == followers.c.followed_id,  # This user is being followed
-        secondaryjoin=id == followers.c.follower_id,  # The other user is following
-        backref="following",  # Allows accessing followings from the follower user
+        primaryjoin=id == followers.c.follower_id,
+        secondaryjoin=id == followers.c.followed_id,
+        single_parent=True,
         cascade="all, delete",
+        back_populates="followers",
+    )
+
+    followeds = relationship(
+        "User",
+        secondary=followers,
+        primaryjoin=id == followers.c.followed_id,
+        secondaryjoin=id == followers.c.follower_id,
+        single_parent=True,
+        cascade="all, delete",
+        back_populates="followeds",
     )
 
     twitsnaps = relationship(
