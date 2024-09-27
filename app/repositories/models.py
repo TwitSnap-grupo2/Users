@@ -8,15 +8,8 @@ from ..utils.schemas import Interests
 followers = Table(
     "followers",
     Base.metadata,
-    Column("follower_id", UUID, ForeignKey("users.id"), primary_key=True),
-    Column("followed_id", UUID, ForeignKey("users.id"), primary_key=True),
-)
-
-followeds = Table(
-    "followeds",
-    Base.metadata,
-    Column("follower_id", UUID, ForeignKey("users.id"), primary_key=True),
-    Column("followed_id", UUID, ForeignKey("users.id"), primary_key=True),
+    Column("follower_id", UUID, ForeignKey("users.id"), primary_key=True, index=True),
+    Column("followed_id", UUID, ForeignKey("users.id"), primary_key=True, index=True),
 )
 
 
@@ -33,26 +26,24 @@ class User(Base):
     interests = relationship(
         "UserInterests", cascade="all, delete", back_populates="user"
     )
-    # Users that this user is following
+
+    followings = relationship(
+        "User",
+        secondary=followers,
+        primaryjoin=id == followers.c.follower_id,  # This user is the follower
+        secondaryjoin=id == followers.c.followed_id,  # The other user is followed
+        backref="followed_by",  # Allows accessing followers from the followed user
+        cascade="all, delete",
+    )
+
+    # Users who are following this user
     followers = relationship(
         "User",
         secondary=followers,
-        primaryjoin=id == followers.c.follower_id,
-        secondaryjoin=id == followers.c.followed_id,
-        single_parent=True,
+        primaryjoin=id == followers.c.followed_id,  # This user is being followed
+        secondaryjoin=id == followers.c.follower_id,  # The other user is following
+        backref="following",  # Allows accessing followings from the follower user
         cascade="all, delete",
-        back_populates="followers",
-    )
-
-    followeds = relationship(
-        "User",
-        secondary=followeds,
-        primaryjoin=id == followeds.c.follower_id,
-        secondaryjoin=id == followeds.c.followed_id,
-        single_parent=True,
-        cascade="all, delete",
-        back_populates="followeds",
-
     )
 
     twitsnaps = relationship(

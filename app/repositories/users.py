@@ -23,7 +23,7 @@ def insert_user(db: Session, new_user: models.User) -> models.User:
         interests=[],
         followers=[],
         followeds=[],
-        twitsnaps=[]
+        twitsnaps=[],
     )
 
     db.add(db_user)
@@ -38,13 +38,10 @@ def get_user_by_email_or_name(db: Session, email: EmailStr, user: str) -> models
         .filter(models.User.email == email or models.User.user == user)
         .first()
     )
-    
-def get_user_by_email(db: Session, email: EmailStr) -> models.User: 
-    return (
-        db.query(models.User)
-        .filter(models.User.email == email)
-        .first()
-    )
+
+
+def get_user_by_email(db: Session, email: EmailStr) -> models.User:
+    return db.query(models.User).filter(models.User.email == email).first()
 
 
 def get_user_by_id(db: Session, user_id: UUID) -> models.User:
@@ -57,17 +54,20 @@ def empty_users(db: Session):
     db.commit()
 
 
-def set_location(db: Session, user_id: UUID, location: str) -> models.User: 
+def set_location(db: Session, user_id: UUID, location: str) -> models.User:
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user: 
+    if not user:
         raise UserNotFound()
 
-    user.location = location  
+    user.location = location
     db.commit()
-    db.refresh(user)  
+    db.refresh(user)
     return user
 
-def set_interests(db: Session, user_id: UUID, interests: list[models.UserInterests]) -> models.User: 
+
+def set_interests(
+    db: Session, user_id: UUID, interests: list[models.UserInterests]
+) -> models.User:
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise UserNotFound()
@@ -77,38 +77,64 @@ def set_interests(db: Session, user_id: UUID, interests: list[models.UserInteres
     db.refresh(user)
     return user
 
-def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]): 
+
+def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]):
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise UserNotFound()
-    
+
     user.goals.extend(goals)
     return user
 
 
-def __user_is_following(follower_user: models.User, followed_user: models.User) -> bool: 
-        return True if followed_user in frozenset(follower_user.followeds) else False
+def __user_is_following(follower_user: models.User, followed_user: models.User) -> bool:
+    return True if followed_user in frozenset(follower_user.followeds) else False
+
 
 def add_follower(db: Session, source_id: UUID, followed_id: str) -> models.User:
     source_user = get_user_by_id(db=db, user_id=source_id)
-    
-    if not source_user: 
-        raise UserNotFound("Follower user not found") 
-    
+
+    if not source_user:
+        raise UserNotFound("Follower user not found")
+
     followed_user = get_user_by_id(db=db, user_id=followed_id)
-    
-    if not followed_user: 
-        raise UserNotFound("Followed user not found") 
-    
+
+    if not followed_user:
+        raise UserNotFound("Followed user not found")
+
     if __user_is_following(follower_user=source_user, followed_user=followed_user):
         raise NotAllowed(message=f"The user is already following {followed_user.name}")
 
     followed_user.followers.append(source_user)
-    source_user.followeds.append(followed_user)
-
 
     db.commit()
     db.refresh(followed_user)
     db.refresh(source_user)
-    
+
+    return source_user
+
+
+def remove_follow(db: Session, source_id: UUID, followed_id: str) -> models.User:
+    source_user = get_user_by_id(db=db, user_id=source_id)
+
+    if not source_user:
+        raise UserNotFound("Follower user not found")
+
+    followed_user = get_user_by_id(db=db, user_id=followed_id)
+
+    if not followed_user:
+        raise UserNotFound("Followed user not found")
+
+    if not __user_is_following(follower_user=source_user, followed_user=followed_user):
+        raise NotAllowed(
+            message=f"Cannot unfollow an unfollowed user: {followed_user.name}"
+        )
+
+    followed_user.followers.remove(source_user)
+    source_user.followeds.remove(followed_user)
+
+    db.commit()
+    db.refresh(followed_user)
+    db.refresh(source_user)
+
     return source_user
