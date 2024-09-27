@@ -1,6 +1,6 @@
 from uuid import UUID
 from fastapi import APIRouter, Body, Depends, HTTPException, status
-from app.utils.errors import UserNotFound
+from app.utils.errors import NotAllowed, UserNotFound
 from ..repositories import models
 from ..services import users as users_service
 from sqlalchemy.orm import Session
@@ -67,3 +67,19 @@ def set_goals(user_id: UUID, goals_list: list[str], db: Session = Depends(get_db
         return users_service.set_goals(db, user_id, goals_list)
     except UserNotFound as e: 
         raise HTTPException(status_code=404, detail=e.message) 
+
+
+@router.post("/follow/{source_id}")
+def follow(source_id: UUID, followed_id: UUID = Body(), db: Session = Depends(get_db)):
+    if source_id == followed_id:
+        raise HTTPException(status_code=403, detail="A user cannot follow himself")
+    try: 
+        return users_service.follow(db=db, source_id=source_id, followed_id=followed_id)
+    except UserNotFound as e: 
+        raise HTTPException(status_code=404, detail=e.message) 
+    except NotAllowed as e: 
+        raise HTTPException(status_code=403, detail=e.message) 
+
+
+    
+    

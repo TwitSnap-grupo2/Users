@@ -12,6 +12,13 @@ followers = Table(
     Column("followed_id", UUID, ForeignKey("users.id"), primary_key=True),
 )
 
+followeds = Table(
+    "followeds",
+    Base.metadata,
+    Column("follower_id", UUID, ForeignKey("users.id"), primary_key=True),
+    Column("followed_id", UUID, ForeignKey("users.id"), primary_key=True),
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -35,6 +42,17 @@ class User(Base):
         single_parent=True,
         cascade="all, delete",
         back_populates="followers",
+    )
+
+    followeds = relationship(
+        "User",
+        secondary=followeds,
+        primaryjoin=id == followeds.c.follower_id,
+        secondaryjoin=id == followeds.c.followed_id,
+        single_parent=True,
+        cascade="all, delete",
+        back_populates="followeds",
+
     )
 
     twitsnaps = relationship(

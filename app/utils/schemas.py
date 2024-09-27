@@ -43,26 +43,18 @@ class DatabaseFollower(BaseModel):
     class Config:
         orm_mode = True
 
+class DatabaseFollowed(BaseModel):
+    followed_id: UUID
+
+    class Config:
+        orm_mode = True
+
 
 class DatabaseTwitsnap(BaseModel):
     id_twitsnap: UUID
 
     class Config:
         orm_mode = True
-
-
-class DatabaseUser(BaseModel):
-    id: UUID
-    email: EmailStr
-    user: str
-    name: str
-    location: (
-        str  
-    ) = str()
-    interests: list[DatabaseInterest] = [] 
-    goals: list[DatabaseGoal] = []
-    followers: list[DatabaseFollower] = []
-    twitsnaps: list[DatabaseTwitsnap] = []
 
 
 class NewUser(BaseModel):
@@ -77,7 +69,26 @@ class User(NewUser):
     interests: list[Interests] 
     goals: list[str] 
     followers: list[UUID] 
+    followeds: list[UUID]
     twitsnaps: list[UUID] 
+
+
+
+class DatabaseUser(BaseModel):
+    id: UUID
+    email: EmailStr
+    user: str
+    name: str
+    location: (
+        str  
+    ) = str()
+    interests: list[DatabaseInterest] = [] 
+    goals: list[DatabaseGoal] = []
+    followers: list[User] = []
+    followeds: list[User] = []
+    twitsnaps: list[DatabaseTwitsnap] = []
+
+
 
 
 class SignUpSchema(BaseModel):

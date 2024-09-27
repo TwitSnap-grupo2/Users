@@ -11,6 +11,7 @@ from app.utils.errors import ExistentUserError
 models.Base.metadata.create_all(bind=engine)
 
 def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
+    print("User: ", user.name)
     return schemas.User(
         id=user.id,
         email=user.email,
@@ -19,8 +20,9 @@ def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
         location=user.location,
         goals=[g.goal for g in user.goals],
         interests=[schemas.Interests(interest.interest) for interest in user.interests],
-        twitsnaps=[twitsnap.id_twitsnap for twitsnap in user.twitsnaps],
-        followers=[follower.follower_id for follower in user.followers],
+        twitsnaps= [twitsnap.id_twitsnap for twitsnap in user.twitsnaps],
+        followers= [follower.id for follower in user.followers],
+        followeds= [followed.id for followed in user.followeds]
     )
 
 
@@ -80,3 +82,6 @@ def set_goals(db: Session, user_id: UUID, goals: list[str]) -> schemas.User:
     ]
     return __database_model_to_schema(users.set_goals(db, user_id, goals_list))
 
+
+def follow(db: Session, source_id: UUID, followed_id: str) -> schemas.User: 
+    return __database_model_to_schema(users.add_follower(db=db, source_id=source_id, followed_id=followed_id))
