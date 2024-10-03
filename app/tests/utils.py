@@ -1,7 +1,11 @@
 import os
-from app.repositories import users, database
+from uuid import uuid4
+
+from pydantic import EmailStr
+from app.repositories import models, users, database
 from app.services import users as users_service
 from app.utils import schemas
+
 
 def empty_database():
     db = next(database.get_db())
@@ -15,3 +19,17 @@ def create_user(new_user: schemas.SignUpSchema) -> schemas.User:
 
 def contains_values(expected_values, response_dict) -> bool:
     return all(item in response_dict.items() for item in expected_values.items())
+
+
+def generate_user(email: EmailStr, user: str, name: str) -> models.User:
+    return models.User(
+        id=uuid4(),
+        email=email,
+        user=user,
+        name=name,
+        location="",
+        goals=[],
+        interests=[],
+        followers=[],
+        twitsnaps=[],
+    )

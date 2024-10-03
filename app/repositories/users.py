@@ -84,6 +84,9 @@ def set_goals(db: Session, user_id: UUID, goals: list[models.UsersGoals]):
         raise UserNotFound()
 
     user.goals.extend(goals)
+    db.commit()
+    db.refresh(user)
+
     return user
 
 
@@ -130,8 +133,8 @@ def remove_follow(db: Session, source_id: UUID, followed_id: str) -> models.User
             message=f"Cannot unfollow an unfollowed user: {followed_user.name}"
         )
 
-    followed_user.followers.remove(source_user)
-    source_user.followeds.remove(followed_user)
+    if followed_user in source_user.followeds:
+        source_user.followeds.remove(followed_user)
 
     db.commit()
     db.refresh(followed_user)

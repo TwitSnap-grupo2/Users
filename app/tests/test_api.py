@@ -16,11 +16,13 @@ test_user = SignUpSchema(
     name="Don Pepo",
 )
 
+
 # Run before each test
 @pytest.fixture(autouse=True)
-def before_each():  
+def before_each():
     # clear database
     utils.empty_database()
+
 
 # Test getting users with an empty database
 def test_get_users_with_empty_database_returns_an_empty_list():
@@ -28,6 +30,7 @@ def test_get_users_with_empty_database_returns_an_empty_list():
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == []
+
 
 # Test getting users returns a list with the users
 def test_get_users_returns_a_list_with_the_users():
@@ -41,6 +44,7 @@ def test_get_users_returns_a_list_with_the_users():
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [dumped_user]
 
+
 # Test getting user by ID with no users returns not found error
 def test_get_user_by_id_with_no_users_return_not_found_error():
     response = client.get(f"/users/{uuid4()}")
@@ -53,18 +57,20 @@ def test_get_user_by_id_with_no_users_return_not_found_error():
     assert response_json["detail"]
     assert response_json["instance"]
 
+
 # Test getting user by ID returns user if user exists
 def test_get_user_by_id_returns_user_if_user_exists():
     user: User = utils.create_user(test_user)
     response_user = test_user.model_dump()
-    del(response_user["password"])
-    
+    del response_user["password"]
+
     response = client.get(f"/users/{str(user.id)}")
 
     response_json = response.json()
     assert response.status_code == status.HTTP_200_OK
     assert utils.contains_values(response_user, response_json)
     assert response_json["id"]
+
 
 # Test signing up a new user
 def test_post_signup_creates_user():
@@ -77,21 +83,22 @@ def test_post_signup_creates_user():
     assert "id" in response.json()
     assert response.json()["email"] == test_user.email
 
+
 # Test setting user location
 def test_set_location_updates_user_location():
     user: User = utils.create_user(test_user)
-    
+
     response = client.post(
-        f"/users/location/{user.id}",
-        json={"location": "ARG"}  # Example location code
+        f"/users/location/{user.id}", json={"location": "ARG"}  # Example location code
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert response.json()["location"] == "ARG"
 
+
 # Test setting user interests
 def test_set_interests_updates_user_interests():
     user: User = utils.create_user(test_user)
-    
+
     response = client.post(
         f"/users/interests/{user.id}",
         json=["science"],  # Example interest
@@ -99,10 +106,11 @@ def test_set_interests_updates_user_interests():
 
     assert response.status_code == status.HTTP_201_CREATED
 
+
 # Test setting user goals
 def test_set_goals_updates_user_goals():
     user: User = utils.create_user(test_user)
-    
+
     response = client.post(
         f"/users/goals/{user.id}",
         json=["Learn FastAPI"],  # Example goal
@@ -110,3 +118,92 @@ def test_set_goals_updates_user_goals():
 
     assert response.status_code == status.HTTP_201_CREATED
 
+
+def test_add_follower_updates_user_followers():
+    user: User = utils.create_user(test_user)
+    follower_user_data = SignUpSchema(
+        email="follower@test.com",
+        password="followerpass",
+        user="Follower",
+        name="Follower User",
+    )
+    follower: User = utils.create_user(follower_user_data)
+
+    response = client.post(
+        f"/users/follow/{follower.id}",
+        json=str(user.id),
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    response_json = response.json()
+    assert "id" in response_json
+    assert response_json["user"] == follower.user
+    assert len(response_json["followeds"]) == 1
+    assert response_json["followeds"][0] == str(user.id)
+
+
+def test_add_follower_already_following():
+    user: User = utils.create_user(test_user)
+    follower_user_data = SignUpSchema(
+        email="follower@test.com",
+        password="followerpass",
+        user="Follower",
+        name="Follower User",
+    )
+    follower: User = utils.create_user(follower_user_data)
+
+    # First follow
+    client.post(f"/users/follow/{follower.id}", json=str(user.id))
+
+    # Second attempt to follow the same user
+    response = client.post(f"/users/follow/{follower.id}", json=str(user.id))
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response_json = response.json()
+    assert response_json["detail"] == f"The user is already following {user.name}"
+
+
+def test_remove_follower():
+    user: User = utils.create_user(test_user)
+    follower_user_data = SignUpSchema(
+        email="follower@test.com",
+        password="followerpass",
+        user="Follower",
+        name="Follower User",
+    )
+    follower: User = utils.create_user(follower_user_data)
+
+    # Follow user first
+    client.post(f"/users/follow/{follower.id}", json=str(user.id))
+
+    # Now remove the follow
+    response = client.delete(
+        f"/users/follow/{follower.id}",
+        params={"followed_id": str(user.id)},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert response_json["id"] == str(follower.id)
+    assert len(response_json["followeds"]) == 0
+
+
+def test_remove_follower_not_following():
+    user: User = utils.create_user(test_user)
+    follower_user_data = SignUpSchema(
+        email="follower@test.com",
+        password="followerpass",
+        user="Follower",
+        name="Follower User",
+    )
+    follower: User = utils.create_user(follower_user_data)
+
+    # Attempt to unfollow without following first
+    response = client.delete(
+        f"/users/follow/{follower.id}",
+        params={"followed_id": str(user.id)},
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response_json = response.json()
+    assert response_json["detail"] == f"Cannot unfollow an unfollowed user: {user.name}"

@@ -52,6 +52,12 @@ docker compose up app
 docker compose up test
 ```
 
+### En caso de querer hacer debugging rapido (se necesitara de un venv)
+
+```bash
+ENV=test python3 -m unittest app/tests/test_file.py
+```
+
 ### Aclaraciones
 
 - Para ver docu de la API expuesta:

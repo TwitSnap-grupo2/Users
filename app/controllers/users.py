@@ -1,5 +1,6 @@
+import logging
 from uuid import UUID
-from fastapi import APIRouter, Body, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
 from app.utils.errors import NotAllowed, UserNotFound
 from ..repositories import models
 from ..services import users as users_service
@@ -88,8 +89,13 @@ def set_goals(user_id: UUID, goals_list: list[str], db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail=e.message)
 
 
-@router.post("/follow/{source_id}")
-def follow(source_id: UUID, followed_id: UUID = Body(), db: Session = Depends(get_db)):
+@router.post("/follow/{source_id}", status_code=status.HTTP_201_CREATED)
+def follow(
+    source_id: UUID,
+    followed_id: UUID = Body(embed=False),
+    db: Session = Depends(get_db),
+):
+    logging.debug("received followed_id: ", followed_id)
     if source_id == followed_id:
         raise HTTPException(status_code=403, detail="A user cannot follow himself")
     try:
@@ -102,7 +108,7 @@ def follow(source_id: UUID, followed_id: UUID = Body(), db: Session = Depends(ge
 
 @router.delete("/follow/{source_id}")
 def unfollow(
-    source_id: UUID, followed_id: UUID = Body(), db: Session = Depends(get_db)
+    source_id: UUID, followed_id: UUID = Query(), db: Session = Depends(get_db)
 ):
     if source_id == followed_id:
         raise HTTPException(status_code=403, detail="A user cannot unfollow himself")

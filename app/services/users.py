@@ -12,7 +12,6 @@ models.Base.metadata.create_all(bind=engine)
 
 
 def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
-    print("User: ", user.name)
     return schemas.User(
         id=user.id,
         email=user.email,

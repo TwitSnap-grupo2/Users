@@ -5,11 +5,23 @@ from ..repositories.database import Base
 from ..utils.schemas import Interests
 
 # Association table for the many-to-many relationship
-followers = Table(
+followers_table = Table(
     "followers",
     Base.metadata,
-    Column("follower_id", UUID, ForeignKey("users.id"), primary_key=True, index=True),
-    Column("followed_id", UUID, ForeignKey("users.id"), primary_key=True, index=True),
+    Column(
+        "follower_id",
+        UUID,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    ),
+    Column(
+        "followed_id",
+        UUID,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    ),
 )
 
 
@@ -27,24 +39,28 @@ class User(Base):
         "UserInterests", cascade="all, delete", back_populates="user"
     )
     # Users that this user is following
+
     followers = relationship(
         "User",
-        secondary=followers,
-        primaryjoin=id == followers.c.follower_id,
-        secondaryjoin=id == followers.c.followed_id,
-        single_parent=True,
+        secondary=followers_table,  # The association table
+        primaryjoin=id == followers_table.c.followed_id,  # I'm being followed
+        secondaryjoin=id == followers_table.c.follower_id,  # By someone else
+        back_populates="followeds",  # The reverse relationship (who I follow)
+        # single_parent=True,
         cascade="all, delete",
-        back_populates="followers",
     )
 
+    # Users that this user is following
     followeds = relationship(
         "User",
-        secondary=followers,
-        primaryjoin=id == followers.c.followed_id,
-        secondaryjoin=id == followers.c.follower_id,
-        single_parent=True,
+        secondary=followers_table,  # The same association table
+        primaryjoin=id == followers_table.c.follower_id,  # I'm following someone
+        secondaryjoin=id
+        == followers_table.c.followed_id,  # They are being followed by me
+        back_populates="followers",
+        # backref="followers",  # The reverse relationship (who follows me)
+        # single_parent=True,
         cascade="all, delete",
-        back_populates="followeds",
     )
 
     twitsnaps = relationship(
