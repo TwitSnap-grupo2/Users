@@ -207,3 +207,87 @@ def test_remove_follower_not_following():
     assert response.status_code == status.HTTP_403_FORBIDDEN
     response_json = response.json()
     assert response_json["detail"] == f"Cannot unfollow an unfollowed user: {user.name}"
+
+
+# Test getting followers of a user with no followers
+def test_get_followers_with_no_followers():
+    user: User = utils.create_user(test_user)
+
+    response = client.get(f"/users/followers/{str(user.id)}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+
+# Test getting followeds of a user with no followeds
+def test_get_followeds_with_no_followeds():
+    user: User = utils.create_user(test_user)
+
+    response = client.get(f"/users/followeds/{str(user.id)}")
+
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+
+# Test getting followers of a user with followers
+def test_get_followers_with_followers():
+    user: User = utils.create_user(test_user)
+    follower_user_data = SignUpSchema(
+        email="follower@test.com",
+        password="followerpass",
+        user="Follower",
+        name="Follower User",
+    )
+    follower: User = utils.create_user(follower_user_data)
+
+    # First, the follower follows the user
+    client.post(f"/users/follow/{follower.id}", json=str(user.id))
+
+    # Now get followers of the user
+    response = client.get(f"/users/followers/{str(user.id)}")
+
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert len(response_json) == 1
+    assert response_json[0]["id"] == str(follower.id)
+    assert response_json[0]["user"] == follower.user
+
+
+# Test getting followeds of a user with followeds
+def test_get_followeds_with_followeds():
+    user: User = utils.create_user(test_user)
+    followed_user_data = SignUpSchema(
+        email="followed@test.com",
+        password="followedpass",
+        user="Followed",
+        name="Followed User",
+    )
+    followed: User = utils.create_user(followed_user_data)
+
+    # First, the user follows the followed user
+    client.post(f"/users/follow/{user.id}", json=str(followed.id))
+
+    # Now get followeds of the user
+    response = client.get(f"/users/followeds/{str(user.id)}")
+
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert len(response_json) == 1
+    assert response_json[0]["id"] == str(followed.id)
+    assert response_json[0]["user"] == followed.user
+
+
+# Test getting followers of a non-existent user
+def test_get_followers_of_non_existent_user():
+    response = client.get(f"/users/followers/{uuid4()}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    response_json = response.json()
+    assert response_json["detail"] == "No user was found for the given id"
+
+
+# Test getting followeds of a non-existent user
+def test_get_followeds_of_non_existent_user():
+    response = client.get(f"/users/followeds/{uuid4()}")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    response_json = response.json()
+    assert response_json["detail"] == "No user was found for the given id"

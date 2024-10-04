@@ -91,3 +91,15 @@ def unfollow(db: Session, source_id: UUID, followed_id: str) -> schemas.User:
     return __database_model_to_schema(
         users.remove_follow(db=db, source_id=source_id, followed_id=followed_id)
     )
+
+
+def get_followers(db: Session, user_id: UUID) -> list[schemas.User]:
+    return [
+        __database_model_to_schema(user) for user in users.get_followers(db, user_id)
+    ]
+
+
+def get_followeds(db: Session, user_id: UUID) -> list[schemas.User]:
+    return [
+        __database_model_to_schema(user) for user in users.get_followeds(db, user_id)
+    ]

@@ -3,6 +3,8 @@ from unittest.mock import MagicMock
 from uuid import uuid4
 from app.repositories import models
 from app.repositories.users import (
+    get_followeds,
+    get_followers,
     get_users,
     insert_user,
     get_user_by_email_or_name,
@@ -17,7 +19,7 @@ from app.repositories.users import (
 )
 from app.tests.utils import generate_user
 from app.utils import schemas
-from app.utils.errors import NotAllowed
+from app.utils.errors import NotAllowed, UserNotFound
 
 
 class TestUserRepository(unittest.TestCase):
@@ -171,6 +173,44 @@ class TestUserRepository(unittest.TestCase):
 
         with self.assertRaises(NotAllowed):
             remove_follow(self.db_mock, self.user.id, self.user2.id)
+
+    def test_get_followers(self):
+        self.user.followers = [self.user2]
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+
+        followers = get_followers(self.db_mock, self.user.id)
+
+        self.assertEqual(followers, self.user.followers)
+        self.db_mock.query.return_value.filter.return_value.first.assert_called_once()
+
+    def test_get_followers_user_not_found(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = None
+
+        with self.assertRaises(UserNotFound) as context:
+            get_followers(self.db_mock, self.user.id)
+
+        self.assertEqual(str(context.exception), "No user was found for the given id")
+
+    def test_get_followeds(self):
+        self.user.followeds = [self.user2]
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+
+        followeds = get_followeds(self.db_mock, self.user.id)
+
+        self.assertEqual(followeds, self.user.followeds)
+        self.db_mock.query.return_value.filter.return_value.first.assert_called_once()
+
+    def test_get_followeds_user_not_found(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = None
+
+        with self.assertRaises(UserNotFound) as context:
+            get_followeds(self.db_mock, self.user.id)
+
+        self.assertEqual(str(context.exception), "No user was found for the given id")
 
 
 if __name__ == "__main__":

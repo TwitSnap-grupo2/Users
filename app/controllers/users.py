@@ -120,3 +120,19 @@ def unfollow(
         raise HTTPException(status_code=404, detail=e.message)
     except NotAllowed as e:
         raise HTTPException(status_code=403, detail=e.message)
+
+
+@router.get("/followers/{user_id}", response_model=list[schemas.User])
+def get_followers(user_id: UUID, db: Session = Depends(get_db)):
+    try:
+        return users_service.get_followers(db, user_id)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)
+
+
+@router.get("/followeds/{user_id}", response_model=list[schemas.User])
+def get_followeds(user_id: UUID, db: Session = Depends(get_db)):
+    try:
+        return users_service.get_followeds(db, user_id)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)

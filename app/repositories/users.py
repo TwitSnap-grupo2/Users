@@ -141,3 +141,17 @@ def remove_follow(db: Session, source_id: UUID, followed_id: str) -> models.User
     db.refresh(source_user)
 
     return source_user
+
+
+def get_followers(db: Session, user_id: UUID) -> models.User:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise UserNotFound("No user was found for the given id")
+    return user.followers
+
+
+def get_followeds(db: Session, user_id: UUID) -> models.User:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise UserNotFound("No user was found for the given id")
+    return user.followeds
