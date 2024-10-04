@@ -1,7 +1,7 @@
-[report]
-omit = usr/
-omit = /
+[run]
+source = pkgname,your_otherpackage
 
+[report]
 exclude_lines =
     pragma: no cover
     def __repr__
