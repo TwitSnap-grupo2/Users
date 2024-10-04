@@ -52,7 +52,7 @@ jobs:
 
       - name: test-coverage
         run: |
-          pip install coveralls 
+          pip install -r requirements.txt 
           coverage run -m pytest 
           COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
 
