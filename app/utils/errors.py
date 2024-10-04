@@ -5,7 +5,14 @@ class ExistentUserError(Exception):
 
 
 class UserNotFound(Exception):
-    def __init__(self):
-        self.message = "User not found"
+    def __init__(self, message="User not found"):
+        self.message = message
         super().__init__(self.message)
+    
+class NotAllowed(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+    
+    
     

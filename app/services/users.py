@@ -1,7 +1,7 @@
 from uuid import UUID
 from sqlalchemy.orm import Session
 from app.repositories import users, models
-from app.repositories.database import  engine
+from app.repositories.database import engine
 from pydantic_extra_types.country import CountryAlpha3
 from app.utils import schemas
 from pydantic import EmailStr
@@ -9,6 +9,7 @@ from app.utils.errors import ExistentUserError
 
 
 models.Base.metadata.create_all(bind=engine)
+
 
 def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
     return schemas.User(
@@ -20,7 +21,8 @@ def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
         goals=[g.goal for g in user.goals],
         interests=[schemas.Interests(interest.interest) for interest in user.interests],
         twitsnaps=[twitsnap.id_twitsnap for twitsnap in user.twitsnaps],
-        followers=[follower.follower_id for follower in user.followers],
+        followers=[follower.id for follower in user.followers],
+        followeds=[followed.id for followed in user.followeds],
     )
 
 
@@ -36,17 +38,18 @@ def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
     if user:
         return __database_model_to_schema(user)
 
+
 def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
     user: models.User = users.get_user_by_email(db=db, email=email)
     if user:
         return __database_model_to_schema(user)
 
 
-def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User: 
+def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
     user = users.get_user_by_email_or_name(
         db=db, email=new_user.email, user=new_user.user
     )
-    
+
     if not user:
         # _res = firebase_admin.auth.create_user(email=str(new_user.email), password=new_user.password)
         db_user = users.insert_user(db=db, new_user=new_user)
@@ -59,12 +62,13 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
         raise ExistentUserError("Username is already registered")
 
 
-
-def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User: 
+def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User:
     return __database_model_to_schema(users.set_location(db, user_id, str(location)))
 
 
-def set_interests(db: Session, user_id: UUID, interests: list[schemas.Interests]) -> schemas.User: 
+def set_interests(
+    db: Session, user_id: UUID, interests: list[schemas.Interests]
+) -> schemas.User:
     interests_list = [
         models.UserInterests(interest=schemas.Interests(interest))
         for interest in interests
@@ -72,11 +76,30 @@ def set_interests(db: Session, user_id: UUID, interests: list[schemas.Interests]
     return __database_model_to_schema(users.set_interests(db, user_id, interests_list))
 
 
-
-def set_goals(db: Session, user_id: UUID, goals: list[str]) -> schemas.User: 
-    goals_list = [
-        models.UsersGoals(goal=goal)
-        for goal in goals
-    ]
+def set_goals(db: Session, user_id: UUID, goals: list[str]) -> schemas.User:
+    goals_list = [models.UsersGoals(goal=goal) for goal in goals]
     return __database_model_to_schema(users.set_goals(db, user_id, goals_list))
 
+
+def follow(db: Session, source_id: UUID, followed_id: str) -> schemas.User:
+    return __database_model_to_schema(
+        users.add_follower(db=db, source_id=source_id, followed_id=followed_id)
+    )
+
+
+def unfollow(db: Session, source_id: UUID, followed_id: str) -> schemas.User:
+    return __database_model_to_schema(
+        users.remove_follow(db=db, source_id=source_id, followed_id=followed_id)
+    )
+
+
+def get_followers(db: Session, user_id: UUID) -> list[schemas.User]:
+    return [
+        __database_model_to_schema(user) for user in users.get_followers(db, user_id)
+    ]
+
+
+def get_followeds(db: Session, user_id: UUID) -> list[schemas.User]:
+    return [
+        __database_model_to_schema(user) for user in users.get_followeds(db, user_id)
+    ]

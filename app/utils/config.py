@@ -2,8 +2,9 @@ import os
 from dotenv import load_dotenv
 import pathlib
 
-basedir = pathlib.Path(__file__).parents[1]
-load_dotenv(basedir / ".env")
+# basedir = pathlib.Path(__file__).parents[1]
+# load_dotenv(basedir / ".env")
+load_dotenv()
 
 
 env = os.getenv("ENV")
@@ -13,7 +14,6 @@ database_url = None
 
 
 if env == "production" or env == "development":
-    print("Entered here...")
     database_url = os.getenv("POSTGRES_URL")
 elif env == "test":
     database_url = os.getenv("TEST_POSTGRES_URL")
