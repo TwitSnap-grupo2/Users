@@ -50,6 +50,15 @@ jobs:
           # Default: ${{ github.workspace }}
           cwd: ""
 
+      - name: test-coverage
+        run: |
+          pip install coveralls 
+          coverage run -m pytest 
+          COVERALLS_REPO_TOKEN=${{ secrets.COVERALLS_REPO_TOKEN }} coveralls
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
+
       # - name: Trigger deployment
       #   if: ${{ github.event_name == 'push' }}
       #   run: curl https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
