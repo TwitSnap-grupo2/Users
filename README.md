@@ -1,3 +1,4 @@
+[![Coverage Status](https://coveralls.io/repos/github/TwitSnap-grupo2/Users/badge.svg?branch=main)](https://coveralls.io/github/TwitSnap-grupo2/Users?branch=main)
 ## Uso de alembic y migraciones
 
 - Este es un poco mas complicado, por lo que lo hago con un virtual env de python, los pasos:
