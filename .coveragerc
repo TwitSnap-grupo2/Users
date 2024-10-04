@@ -1,5 +1,5 @@
 [run]
-source = pkgname,your_otherpackage
+source = app
 
 [report]
 exclude_lines =
