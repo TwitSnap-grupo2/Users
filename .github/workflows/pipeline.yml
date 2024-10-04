@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PORT: 3000
-      NODE_ENV: test
+      ENV: test
       TEST_POSTGRES_URL: ${{ secrets.TEST_POSTGRES_URL }}
     steps:
       # - name: Checkout repository
