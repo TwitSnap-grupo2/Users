@@ -103,3 +103,12 @@ class UserTwitsnaps(Base):
     id_twitsnap = Column(UUID, primary_key=True)
 
     user = relationship("User", back_populates="twitsnaps")
+
+class Admins(Base):
+    __tablename__ = "admins"
+
+    id = Column(UUID, primary_key=True, server_default=text("uuid_generate_v4()"))
+    email = Column(String, unique=True, index=True)
+    name = Column(String)
+
+
