@@ -107,8 +107,6 @@ class UserTwitsnaps(Base):
 class Admins(Base):
     __tablename__ = "admins"
 
-    id = Column(UUID, primary_key=True, server_default=text("uuid_generate_v4()"))
+    id = Column(UUID, primary_key=True)
     email = Column(String, unique=True, index=True)
-    name = Column(String)
-
 

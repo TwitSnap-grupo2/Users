@@ -84,6 +84,10 @@ class SignUpSchema(BaseModel):
     user: str
     name: str
 
+class SignUpAdminSchema(BaseModel):
+    email: EmailStr
+    password: str
+
 
 class LoginSchema(BaseModel):
     email: EmailStr
@@ -96,3 +100,8 @@ class LoggedUser(User):
 
 class Location(BaseModel):
     location: CountryAlpha3
+
+
+class Admin(BaseModel):
+    id: UUID
+    email: EmailStr

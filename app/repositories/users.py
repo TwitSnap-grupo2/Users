@@ -32,12 +32,27 @@ def insert_user(db: Session, new_user: models.User) -> models.User:
     return db_user
 
 
+def insert_admin(db: Session, new_admin: models.Admins) -> models.Admins:
+    db_admin = models.Admins(
+        id=uuid4(),
+        email=new_admin.email,
+    )
+
+    db.add(db_admin)
+    db.commit()
+    db.refresh(db_admin)
+    return db_admin
+
+
 def get_user_by_email_or_name(db: Session, email: EmailStr, user: str) -> models.User:
     return (
         db.query(models.User)
         .filter(models.User.email == email or models.User.user == user)
         .first()
     )
+
+def get_admin_by_email(db: Session, email: EmailStr) -> models.Admins:
+    return db.query(models.Admins).filter(models.Admins.email == email).first()
 
 
 def get_user_by_email(db: Session, email: EmailStr) -> models.User:
@@ -51,6 +66,7 @@ def get_user_by_id(db: Session, user_id: UUID) -> models.User:
 
 def empty_users(db: Session):
     db.query(models.User).delete()
+    db.query(models.Admins).delete()
     db.commit()
 
 
