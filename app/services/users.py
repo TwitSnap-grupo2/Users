@@ -78,7 +78,10 @@ def signup_admin(db: Session, new_admin: schemas.SignUpAdminSchema) -> schemas.A
     if admin.email == new_admin.email:
         raise ExistentUserError("Mail is already registered")
 
-
+def fetch_admin_by_id(db: Session, id: UUID) -> schemas.Admin | None:
+    admin: models.Admins = users.get_admin_by_id(db=db, admin_id=id)
+    if admin:
+        return __database_model_to_admin_schema(admin)
 
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User:
     return __database_model_to_schema(users.set_location(db, user_id, str(location)))

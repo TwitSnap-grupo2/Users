@@ -146,3 +146,10 @@ def create_admin_account(admin_data: schemas.SignUpAdminSchema, db: Session = De
     except users_service.ExistentUserError as e:
         print(e.message)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+@router.get("/admin/{admin_id}", response_model=schemas.Admin)
+def get_admin(user_id: UUID, db: Session = Depends(get_db)) -> schemas.Admin:
+    admin = users_service.fetch_admin_by_id(db=db, id=user_id)
+    if not admin:
+        raise HTTPException(status_code=404, detail="User not found")
+    return admin

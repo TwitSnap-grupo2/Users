@@ -63,6 +63,10 @@ def get_user_by_id(db: Session, user_id: UUID) -> models.User:
     user = db.query(models.User).filter(models.User.id == user_id).first()
     return user
 
+def get_admin_by_id(db: Session, admin_id: UUID) -> models.Admins:
+    admin = db.query(models.Admins).filter(models.Admins.id == admin_id).first()
+    return admin
+
 
 def empty_users(db: Session):
     db.query(models.User).delete()
