@@ -136,3 +136,13 @@ def get_followeds(user_id: UUID, db: Session = Depends(get_db)):
         return users_service.get_followeds(db, user_id)
     except UserNotFound as e:
         raise HTTPException(status_code=404, detail=e.message)
+
+
+@router.post("/admin/signup", status_code=status.HTTP_201_CREATED,  response_model=schemas.Admin)
+def create_admin_account(admin_data: schemas.SignUpAdminSchema, db: Session = Depends(get_db)):
+    try:
+        admin = users_service.signup_admin(db=db, new_admin=admin_data)
+        return admin
+    except users_service.ExistentUserError as e:
+        print(e.message)
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)

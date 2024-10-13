@@ -3,3 +3,4 @@ from app.repositories.models import User
 from app.repositories.models import UsersGoals
 from app.repositories.models import UserInterests
 from app.repositories.models import UserTwitsnaps
+from app.repositories.models import Admins

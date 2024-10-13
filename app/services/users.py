@@ -25,6 +25,12 @@ def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
         followeds=[followed.id for followed in user.followeds],
     )
 
+def __database_model_to_admin_schema(user: models.Admins) -> schemas.Admin:
+    return schemas.Admin(
+        id=user.id,
+        email=user.email,
+    )
+
 
 # Use async because eventually it will be this way, so in order to make the refactor `cheaper` put it there for now
 def fetch_users(db: Session) -> list[schemas.User]:
@@ -60,6 +66,18 @@ def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
         raise ExistentUserError("Mail is already registered")
     if user.user == new_user.user:
         raise ExistentUserError("Username is already registered")
+
+
+def signup_admin(db: Session, new_admin: schemas.SignUpAdminSchema) -> schemas.Admin:
+    admin = users.get_admin_by_email(db=db, email=new_admin.email)
+
+    if not admin:
+        db_admin = users.insert_admin(db=db, new_admin=new_admin)
+        return __database_model_to_admin_schema(db_admin)
+
+    if admin.email == new_admin.email:
+        raise ExistentUserError("Mail is already registered")
+
 
 
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User:

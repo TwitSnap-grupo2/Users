@@ -2,7 +2,7 @@ from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
-from app.utils.schemas import User, SignUpSchema
+from app.utils.schemas import Admin, SignUpAdminSchema, User, SignUpSchema
 from app.tests import utils
 import pytest
 
@@ -14,6 +14,12 @@ test_user = SignUpSchema(
     password="pepo",
     user="Pepo",
     name="Don Pepo",
+)
+
+test_admin = SignUpAdminSchema(
+    email="donpepo@admin.com",
+    password="pepo",
+    user="pepiAdmin",
 )
 
 
@@ -291,3 +297,14 @@ def test_get_followeds_of_non_existent_user():
     assert response.status_code == status.HTTP_404_NOT_FOUND
     response_json = response.json()
     assert response_json["detail"] == "No user was found for the given id"
+
+
+def test_post_admin_signup_creates_admin():
+    response = client.post(
+        "/users/admin/signup",
+        json=test_admin.model_dump(),
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert "id" in response.json()
+    assert response.json()["email"] == test_admin.email
