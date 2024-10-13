@@ -1,6 +1,7 @@
 # from app.repositories.schemas import NewUser, User
 from uuid import uuid4, UUID
 from pydantic import EmailStr
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.utils.errors import NotAllowed, UserNotFound
@@ -11,6 +12,13 @@ from . import models
 def get_users(db: Session) -> list[models.User]:
     return db.query(models.User).all()
 
+def search_users(db: Session, query: str, limit: int = 10) -> list[models.User]:
+    return (
+        db.query(models.User)
+        .filter(models.User.user.ilike(f'%{query}%'))
+        .limit(limit)
+        .all()
+    )
 
 def insert_user(db: Session, new_user: models.User) -> models.User:
     db_user = models.User(

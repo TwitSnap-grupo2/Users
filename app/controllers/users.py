@@ -18,6 +18,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_users(db: Session = Depends(get_db)):
     return users_service.fetch_users(db)
 
+@router.get("/search", response_model=list[schemas.User])
+def search_users(user: str, db: Session = Depends(get_db)):
+    return users_service.search_users(db, user)
+
 
 @router.get("/{user_id}", response_model=schemas.User)
 def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:

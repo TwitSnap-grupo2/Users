@@ -50,6 +50,9 @@ def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
     if user:
         return __database_model_to_schema(user)
 
+def search_users(db: Session, query: str) -> list[schemas.User]:
+    db_users: list[schemas.DatabaseUser] = users.search_users(db, query)
+    return [__database_model_to_schema(user) for user in db_users]
 
 def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
     user = users.get_user_by_email_or_name(

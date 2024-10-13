@@ -308,3 +308,41 @@ def test_post_admin_signup_creates_admin():
     assert response.status_code == status.HTTP_201_CREATED
     assert "id" in response.json()
     assert response.json()["email"] == test_admin.email
+
+
+def test_search_users_returns_users_ordered_by_similarity():
+    user1: User = utils.create_user(
+        SignUpSchema(
+            email="user1@gmail.com",
+            password= "user1pass",
+            user= "therealuser1",
+            name= "user1")
+    )
+   
+    user2: User = utils.create_user(
+        SignUpSchema(
+            email="user3@gmail.com",
+            password= "user3pass",
+            user= "realuser3",
+            name= "user3")
+    )
+    user3: User = utils.create_user(
+        SignUpSchema(
+            email="user2@gmail.com",
+            password= "user2pass",
+            user= "therealuser2",
+            name= "user2")
+    )
+    user4: User = utils.create_user(
+        SignUpSchema(
+            email="user4@gmail.com",
+            password= "user2pass",
+            user= "imnotsimilar",
+            name= "user4")
+    )
+    response = client.get("/users/search?user=therealuser")
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert len(response_json) == 2
+    assert response_json[0]["id"] == str(user1.id)
+    assert response_json[1]["id"] == str(user3.id)
