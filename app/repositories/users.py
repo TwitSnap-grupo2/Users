@@ -1,6 +1,7 @@
 # from app.repositories.schemas import NewUser, User
 from uuid import uuid4, UUID
 from pydantic import EmailStr
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.utils.errors import NotAllowed, UserNotFound
@@ -11,6 +12,15 @@ from . import models
 def get_users(db: Session) -> list[models.User]:
     return db.query(models.User).all()
 
+
+def search_users(db: Session, query: str, limit: int) -> list[models.User]:
+    return (
+        db.query(models.User)
+        .filter(func.similarity(models.User.user, query) > 0.1)  
+        .order_by(func.similarity(models.User.user, query).desc()) 
+        .limit(limit)
+        .all()
+    )
 
 def insert_user(db: Session, new_user: models.User) -> models.User:
     db_user = models.User(
@@ -62,6 +72,10 @@ def get_user_by_email(db: Session, email: EmailStr) -> models.User:
 def get_user_by_id(db: Session, user_id: UUID) -> models.User:
     user = db.query(models.User).filter(models.User.id == user_id).first()
     return user
+
+def get_admin_by_id(db: Session, admin_id: UUID) -> models.Admins:
+    admin = db.query(models.Admins).filter(models.Admins.id == admin_id).first()
+    return admin
 
 
 def empty_users(db: Session):
