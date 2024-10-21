@@ -19,8 +19,8 @@ def get_users(db: Session = Depends(get_db)):
     return users_service.fetch_users(db)
 
 @router.get("/search", response_model=list[schemas.User])
-def search_users(user: str, db: Session = Depends(get_db)):
-    return users_service.search_users(db, user)
+def search_users(user: str, limit:int, db: Session = Depends(get_db)):
+    return users_service.search_users(db, user, limit)
 
 
 @router.get("/{user_id}", response_model=schemas.User)

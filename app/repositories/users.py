@@ -12,10 +12,12 @@ from . import models
 def get_users(db: Session) -> list[models.User]:
     return db.query(models.User).all()
 
-def search_users(db: Session, query: str, limit: int = 10) -> list[models.User]:
+
+def search_users(db: Session, query: str, limit: int) -> list[models.User]:
     return (
         db.query(models.User)
-        .filter(models.User.user.ilike(f'%{query}%'))
+        .filter(func.levenshtein(models.User.user, query) < 5)  
+        .order_by(func.levenshtein(models.User.user, query))    
         .limit(limit)
         .all()
     )

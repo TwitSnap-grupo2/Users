@@ -311,38 +311,58 @@ def test_post_admin_signup_creates_admin():
 
 
 def test_search_users_returns_users_ordered_by_similarity():
+    # Crear usuarios de prueba con nombres de usuario similares y no similares
     user1: User = utils.create_user(
         SignUpSchema(
             email="user1@gmail.com",
-            password= "user1pass",
-            user= "therealuser1",
-            name= "user1")
+            password="user1pass",
+            user="therealuser1",
+            name="user1"
+        )
     )
-   
     user2: User = utils.create_user(
         SignUpSchema(
             email="user3@gmail.com",
-            password= "user3pass",
-            user= "realuser3",
-            name= "user3")
+            password="user3pass",
+            user="realuser3",
+            name="user3"
+        )
     )
     user3: User = utils.create_user(
         SignUpSchema(
             email="user2@gmail.com",
-            password= "user2pass",
-            user= "therealuser2",
-            name= "user2")
+            password="user2pass",
+            user="therealuser2",
+            name="user2"
+        )
     )
     user4: User = utils.create_user(
         SignUpSchema(
             email="user4@gmail.com",
-            password= "user2pass",
-            user= "imnotsimilar",
-            name= "user4")
+            password="user4pass",
+            user="imnotsimilar",
+            name="user4"
+        )
     )
-    response = client.get("/users/search?user=therealuser")
+    user5: User = utils.create_user(
+        SignUpSchema(
+            email="user5@gmail.com",
+            password="user5pass",
+            user="imarealusertoo",
+            name="user5"
+        )
+    )
+
+    # Realizar la búsqueda con el término 'therealuser' y límite de 10
+    response = client.get("/users/search?user=therealuser&limit=10")
     assert response.status_code == status.HTTP_200_OK
+
+    # Obtener la respuesta en formato JSON
     response_json = response.json()
-    assert len(response_json) == 2
-    assert response_json[0]["id"] == str(user1.id)
-    assert response_json[1]["id"] == str(user3.id)
+
+    # Asegurarse de que se devuelven los usuarios esperados en el orden correcto
+    assert len(response_json) == 3  # Deben aparecer 3 usuarios similares
+    assert response_json[0]["id"] == str(user1.id)  # 'therealuser1' es el más similar
+    assert response_json[1]["id"] == str(user3.id)  # 'therealuser2' es el siguiente más similar
+    assert response_json[2]["id"] == str(user5.id)  # 'imarealusertoo' es menos similar
+
