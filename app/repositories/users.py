@@ -185,3 +185,12 @@ def get_followeds(db: Session, user_id: UUID) -> models.User:
     if not user:
         raise UserNotFound("No user was found for the given id")
     return user.followeds
+
+def update_name(db: Session, user_id: UUID, name: str) -> models.User:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise UserNotFound("No user was found for the given id")
+    user.name = name
+    db.commit()
+    db.refresh(user)
+    return user

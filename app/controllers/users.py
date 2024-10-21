@@ -151,9 +151,21 @@ def create_admin_account(admin_data: schemas.SignUpAdminSchema, db: Session = De
         print(e.message)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
 
+
 @router.get("/admin/{admin_id}", response_model=schemas.Admin)
 def get_admin(user_id: UUID, db: Session = Depends(get_db)) -> schemas.Admin:
     admin = users_service.fetch_admin_by_id(db=db, id=user_id)
     if not admin:
         raise HTTPException(status_code=404, detail="User not found")
     return admin
+
+@router.get("/interests/", response_model=list[schemas.Interests])
+def get_interests():
+    return [interest.value for interest in schemas.Interests]
+
+@router.put("/name/{user_id}", response_model=schemas.User)
+def update_name(user_id: UUID, name: str = Query(), db: Session = Depends(get_db)):
+    try:
+        return users_service.update_name(db, user_id, name)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)

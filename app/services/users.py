@@ -127,3 +127,6 @@ def get_followeds(db: Session, user_id: UUID) -> list[schemas.User]:
     return [
         __database_model_to_schema(user) for user in users.get_followeds(db, user_id)
     ]
+
+def update_name(db: Session, user_id: UUID, name: str) -> schemas.User:
+    return __database_model_to_schema(users.update_name(db, user_id, name))
