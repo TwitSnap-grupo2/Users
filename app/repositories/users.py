@@ -16,8 +16,8 @@ def get_users(db: Session) -> list[models.User]:
 def search_users(db: Session, query: str, limit: int) -> list[models.User]:
     return (
         db.query(models.User)
-        .filter(func.levenshtein(models.User.user, query) < 5)  
-        .order_by(func.levenshtein(models.User.user, query))    
+        .filter(func.similarity(models.User.user, query) > 0.1)  
+        .order_by(func.similarity(models.User.user, query).desc()) 
         .limit(limit)
         .all()
     )
