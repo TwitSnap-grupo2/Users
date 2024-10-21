@@ -2,12 +2,11 @@ from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
 from app.main import app
-from app.utils.schemas import Admin, SignUpAdminSchema, User, SignUpSchema
+from app.utils.schemas import Admin, SignUpAdminSchema, User, SignUpSchema, Interests
 from app.tests import utils
 import pytest
 
 client = TestClient(app)
-
 
 test_user = SignUpSchema(
     email="donpepo@test.com",
@@ -308,3 +307,35 @@ def test_post_admin_signup_creates_admin():
     assert response.status_code == status.HTTP_201_CREATED
     assert "id" in response.json()
     assert response.json()["email"] == test_admin.email
+
+
+def test_update_users_name_of_non_existent_user():
+    response = client.put(
+        f"/users/name/{uuid4()}?name=NewName",
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    response_json = response.json()
+    assert response_json["detail"] == "No user was found for the given id"
+
+def test_update_users_name():
+    user: User = utils.create_user(test_user)
+    response = client.put(
+        f"/users/name/{str(user.id)}?name=NewName",
+    )
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert response_json["name"] == "NewName"
+    assert response_json["id"] == str(user.id)
+    assert response_json["user"] == user.user
+    assert response_json["email"] == user.email
+    assert response_json["location"] == user.location
+    assert response_json["goals"] == user.goals
+    assert response_json["interests"] == user.interests
+    assert response_json["followers"] == user.followers
+    assert response_json["followeds"] == user.followeds
+    assert response_json["twitsnaps"] == user.twitsnaps
+
+def test_get_interests():
+    response = client.get("/users/interests/")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == [interest for interest in Interests]
