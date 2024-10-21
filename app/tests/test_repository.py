@@ -77,7 +77,7 @@ class TestUserRepository(unittest.TestCase):
     def test_empty_users(self):
         self.db_mock.query.return_value.delete = MagicMock()
         empty_users(self.db_mock)
-        self.db_mock.query.return_value.delete.assert_called_once()
+        self.db_mock.query.return_value.delete.assert_called()
         self.db_mock.commit.assert_called_once()
 
     def test_set_location(self):

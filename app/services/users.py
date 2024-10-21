@@ -50,6 +50,9 @@ def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
     if user:
         return __database_model_to_schema(user)
 
+def search_users(db: Session, user: str, limit:int) -> list[schemas.User]:
+    db_users: list[schemas.DatabaseUser] = users.search_users(db, user, limit)
+    return [__database_model_to_schema(user) for user in db_users]
 
 def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
     user = users.get_user_by_email_or_name(
@@ -78,7 +81,10 @@ def signup_admin(db: Session, new_admin: schemas.SignUpAdminSchema) -> schemas.A
     if admin.email == new_admin.email:
         raise ExistentUserError("Mail is already registered")
 
-
+def fetch_admin_by_id(db: Session, id: UUID) -> schemas.Admin | None:
+    admin: models.Admins = users.get_admin_by_id(db=db, admin_id=id)
+    if admin:
+        return __database_model_to_admin_schema(admin)
 
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User:
     return __database_model_to_schema(users.set_location(db, user_id, str(location)))

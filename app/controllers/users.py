@@ -18,6 +18,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_users(db: Session = Depends(get_db)):
     return users_service.fetch_users(db)
 
+@router.get("/search", response_model=list[schemas.User])
+def search_users(user: str, limit:int, db: Session = Depends(get_db)):
+    return users_service.search_users(db, user, limit)
+
 
 @router.get("/{user_id}", response_model=schemas.User)
 def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
@@ -146,6 +150,14 @@ def create_admin_account(admin_data: schemas.SignUpAdminSchema, db: Session = De
     except users_service.ExistentUserError as e:
         print(e.message)
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.message)
+
+
+@router.get("/admin/{admin_id}", response_model=schemas.Admin)
+def get_admin(user_id: UUID, db: Session = Depends(get_db)) -> schemas.Admin:
+    admin = users_service.fetch_admin_by_id(db=db, id=user_id)
+    if not admin:
+        raise HTTPException(status_code=404, detail="User not found")
+    return admin
 
 @router.get("/interests/", response_model=list[schemas.Interests])
 def get_interests():
