@@ -77,6 +77,24 @@ def get_admin_by_id(db: Session, admin_id: UUID) -> models.Admins:
     admin = db.query(models.Admins).filter(models.Admins.id == admin_id).first()
     return admin
 
+def search_followeds(db: Session, user_id: UUID, query: str, limit: int) -> list[models.User]:
+    user: models.User = get_user_by_id(db, user_id)
+    if not user:
+        raise UserNotFound("No user was found for the given id")
+    followeds = [followed.id for followed in user.followeds]
+    return (
+        db.query(models.User)
+        .filter(models.User.id.in_(followeds))
+        .filter(func.similarity(models.User.user, query) > 0.1)
+        .order_by(func.similarity(models.User.user, query).desc())
+        .limit(limit)
+        .all()
+    )
+
+    
+
+
+
 
 def empty_users(db: Session):
     db.query(models.User).delete()

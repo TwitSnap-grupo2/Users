@@ -394,3 +394,55 @@ def test_search_users_returns_users_ordered_by_similarity():
 
 
 
+def test_search_followeds_returns_followeds_ordered_by_similarity():
+    user1: User = utils.create_user(
+        SignUpSchema(
+            email="user1@gmail.com",
+            password="user1pass",
+            user="therealuser",
+            name="user1"
+        )
+    )
+    user2: User = utils.create_user(
+        SignUpSchema(
+            email="user3@gmail.com",
+            password="user3pass",
+            user="realuser3",
+            name="user3"
+        )
+    )
+    user3: User = utils.create_user(
+        SignUpSchema(
+            email="user2@gmail.com",
+            password="user2pass",
+            user="therealuser2",
+            name="user2"
+        )
+    )
+    user4: User = utils.create_user(
+        SignUpSchema(
+            email="user4@gmail.com",
+            password="user4pass",
+            user="therealuser566",
+            name="user4"
+        )
+    )
+
+    client.post(f"/users/follow/{user1.id}", json=str(user2.id))
+    client.post(f"/users/follow/{user1.id}", json=str(user3.id))
+
+    response = client.get(f"/users/followeds/{user1.id}/search?user=therealuser&limit=10")
+    assert response.status_code == status.HTTP_200_OK
+
+    response_json = response.json()
+
+    assert len(response_json) == 2
+    assert response_json[0]["id"] == str(user3.id)
+    assert response_json[1]["id"] == str(user2.id)
+
+
+
+    
+
+
+

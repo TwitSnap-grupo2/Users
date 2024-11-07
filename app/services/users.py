@@ -32,11 +32,11 @@ def __database_model_to_admin_schema(user: models.Admins) -> schemas.Admin:
     )
 
 
-# Use async because eventually it will be this way, so in order to make the refactor `cheaper` put it there for now
 def fetch_users(db: Session) -> list[schemas.User]:
     db_users: list[schemas.DatabaseUser] = users.get_users(db)
 
     return [__database_model_to_schema(user) for user in db_users]
+
 
 
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
@@ -53,6 +53,11 @@ def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
 def search_users(db: Session, user: str, limit:int) -> list[schemas.User]:
     db_users: list[schemas.DatabaseUser] = users.search_users(db, user, limit)
     return [__database_model_to_schema(user) for user in db_users]
+
+def search_followeds(db: Session, user_id: UUID, user: str, limit:int) -> list[schemas.User]:
+    db_users: list[schemas.DatabaseUser] = users.search_followeds(db, user_id, user, limit)
+    return [__database_model_to_schema(user) for user in db_users]
+
 
 def signup(db: Session, new_user: schemas.SignUpSchema) -> schemas.User:
     user = users.get_user_by_email_or_name(
