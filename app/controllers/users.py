@@ -30,6 +30,12 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+@router.get("/followeds/{user_id}/search", response_model=list[schemas.User])
+def search_followeds(user_id: UUID, user: str, limit:int, db: Session = Depends(get_db)):
+    try:
+        return users_service.search_followeds(db, user_id, user, limit)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)
 
 @router.get("/email/{email}", response_model=schemas.User)
 def get_user(email: EmailStr, db: Session = Depends(get_db)) -> schemas.User:
