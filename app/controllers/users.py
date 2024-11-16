@@ -195,6 +195,6 @@ def add_device(user_id: UUID, deviceToken: str = Body(), db: Session = Depends(g
 
 
 @router.post("/ping")
-def add_device(res: Response):
+def ping(res: Response):
     print("Healthcheck received")
     return {"message": "Pong"}
