@@ -1,6 +1,6 @@
 import logging
 from uuid import UUID
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from app.utils.errors import NotAllowed, UserNotFound
 from ..repositories import models
 from ..services import users as users_service
@@ -192,3 +192,9 @@ def update_name(user_id: UUID, name: str = Query(), db: Session = Depends(get_db
 @router.post("/devices/{user_id}")
 def add_device(user_id: UUID, deviceToken: str = Body(), db: Session = Depends(get_db)):
     print(f"deviceToken: {deviceToken} | user_id: {user_id}")
+
+
+@router.post("/ping")
+def add_device(res: Response):
+    print("Healthcheck received")
+    return {"message": "Pong"}
