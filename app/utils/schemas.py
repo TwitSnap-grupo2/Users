@@ -83,7 +83,8 @@ class SignUpSchema(BaseModel):
     password: str
     user: str
     name: str
-    location: CountryAlpha3
+    location: str
+
 
 class SignUpAdminSchema(BaseModel):
     email: EmailStr

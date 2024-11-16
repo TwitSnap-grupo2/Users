@@ -55,6 +55,7 @@ def get_user(email: EmailStr, db: Session = Depends(get_db)) -> schemas.User:
 )
 def create_account(user_data: schemas.SignUpSchema, db: Session = Depends(get_db)):
     try:
+        logging.info(f"user_data: {user_data}")
         user = users_service.signup(db=db, new_user=user_data)
         return user
     except users_service.ExistentUserError as e:
