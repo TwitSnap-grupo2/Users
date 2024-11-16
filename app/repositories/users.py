@@ -28,7 +28,7 @@ def insert_user(db: Session, new_user: models.User) -> models.User:
         email=new_user.email,
         user=new_user.user,
         name=new_user.name,
-        location="",
+        location=new_user.location,
         goals=[],
         interests=[],
         followers=[],

@@ -104,9 +104,18 @@ class UserTwitsnaps(Base):
 
     user = relationship("User", back_populates="twitsnaps")
 
+
 class Admins(Base):
     __tablename__ = "admins"
 
     id = Column(UUID, primary_key=True)
     email = Column(String, unique=True, index=True)
 
+
+class UserDevices(Base):
+    __tablename__ = "user_devices"
+
+    id_user = Column(
+        UUID, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    device = Column(String)

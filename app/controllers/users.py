@@ -18,8 +18,9 @@ router = APIRouter(prefix="/users", tags=["users"])
 def get_users(db: Session = Depends(get_db)):
     return users_service.fetch_users(db)
 
+
 @router.get("/search", response_model=list[schemas.User])
-def search_users(user: str, limit:int, db: Session = Depends(get_db)):
+def search_users(user: str, limit: int, db: Session = Depends(get_db)):
     return users_service.search_users(db, user, limit)
 
 
@@ -30,12 +31,16 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
+
 @router.get("/followeds/{user_id}/search", response_model=list[schemas.User])
-def search_followeds(user_id: UUID, user: str, limit:int, db: Session = Depends(get_db)):
+def search_followeds(
+    user_id: UUID, user: str, limit: int, db: Session = Depends(get_db)
+):
     try:
         return users_service.search_followeds(db, user_id, user, limit)
     except UserNotFound as e:
         raise HTTPException(status_code=404, detail=e.message)
+
 
 @router.get("/email/{email}", response_model=schemas.User)
 def get_user(email: EmailStr, db: Session = Depends(get_db)) -> schemas.User:
@@ -148,8 +153,12 @@ def get_followeds(user_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=e.message)
 
 
-@router.post("/admin/signup", status_code=status.HTTP_201_CREATED,  response_model=schemas.Admin)
-def create_admin_account(admin_data: schemas.SignUpAdminSchema, db: Session = Depends(get_db)):
+@router.post(
+    "/admin/signup", status_code=status.HTTP_201_CREATED, response_model=schemas.Admin
+)
+def create_admin_account(
+    admin_data: schemas.SignUpAdminSchema, db: Session = Depends(get_db)
+):
     try:
         admin = users_service.signup_admin(db=db, new_admin=admin_data)
         return admin
@@ -165,9 +174,11 @@ def get_admin(user_id: UUID, db: Session = Depends(get_db)) -> schemas.Admin:
         raise HTTPException(status_code=404, detail="User not found")
     return admin
 
+
 @router.get("/interests/", response_model=list[schemas.Interests])
 def get_interests():
     return [interest.value for interest in schemas.Interests]
+
 
 @router.put("/name/{user_id}", response_model=schemas.User)
 def update_name(user_id: UUID, name: str = Query(), db: Session = Depends(get_db)):
@@ -175,3 +186,8 @@ def update_name(user_id: UUID, name: str = Query(), db: Session = Depends(get_db
         return users_service.update_name(db, user_id, name)
     except UserNotFound as e:
         raise HTTPException(status_code=404, detail=e.message)
+
+
+@router.post("/devices/{user_id}")
+def add_device(user_id: UUID, deviceToken: str = Body(), db: Session = Depends(get_db)):
+    print(f"deviceToken: {deviceToken} | user_id: {user_id}")
