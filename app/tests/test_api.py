@@ -1,8 +1,16 @@
 from uuid import uuid4
 from fastapi import status
 from fastapi.testclient import TestClient
+from app.services.users import follow
 from app.main import app
-from app.utils.schemas import Admin, SignUpAdminSchema, User, SignUpSchema, Interests
+from app.utils.schemas import (
+    Admin,
+    SignUpAdminSchema,
+    User,
+    SignUpSchema,
+    Interests,
+    UserWithoutId,
+)
 from app.tests import utils
 import pytest
 
@@ -13,6 +21,7 @@ test_user = SignUpSchema(
     password="pepo",
     user="Pepo",
     name="Don Pepo",
+    location="ARG",
 )
 
 test_admin = SignUpAdminSchema(
@@ -131,6 +140,7 @@ def test_add_follower_updates_user_followers():
         password="followerpass",
         user="Follower",
         name="Follower User",
+        location="ARG",
     )
     follower: User = utils.create_user(follower_user_data)
 
@@ -154,6 +164,7 @@ def test_add_follower_already_following():
         password="followerpass",
         user="Follower",
         name="Follower User",
+        location="ARG",
     )
     follower: User = utils.create_user(follower_user_data)
 
@@ -175,6 +186,7 @@ def test_remove_follower():
         password="followerpass",
         user="Follower",
         name="Follower User",
+        location="ARG",
     )
     follower: User = utils.create_user(follower_user_data)
 
@@ -200,6 +212,7 @@ def test_remove_follower_not_following():
         password="followerpass",
         user="Follower",
         name="Follower User",
+        location="ARG",
     )
     follower: User = utils.create_user(follower_user_data)
 
@@ -242,6 +255,7 @@ def test_get_followers_with_followers():
         password="followerpass",
         user="Follower",
         name="Follower User",
+        location="ARG",
     )
     follower: User = utils.create_user(follower_user_data)
 
@@ -266,6 +280,7 @@ def test_get_followeds_with_followeds():
         password="followedpass",
         user="Followed",
         name="Followed User",
+        location="ARG",
     )
     followed: User = utils.create_user(followed_user_data)
 
@@ -317,6 +332,7 @@ def test_update_users_name_of_non_existent_user():
     response_json = response.json()
     assert response_json["detail"] == "No user was found for the given id"
 
+
 def test_update_users_name():
     user: User = utils.create_user(test_user)
     response = client.put(
@@ -335,10 +351,12 @@ def test_update_users_name():
     assert response_json["followeds"] == user.followeds
     assert response_json["twitsnaps"] == user.twitsnaps
 
+
 def test_get_interests():
     response = client.get("/users/interests/")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [interest for interest in Interests]
+
 
 def test_search_users_returns_users_ordered_by_similarity():
     user1: User = utils.create_user(
@@ -346,7 +364,8 @@ def test_search_users_returns_users_ordered_by_similarity():
             email="user1@gmail.com",
             password="user1pass",
             user="therealuser",
-            name="user1"
+            name="user1",
+            location="ARG",
         )
     )
     user2: User = utils.create_user(
@@ -354,7 +373,8 @@ def test_search_users_returns_users_ordered_by_similarity():
             email="user3@gmail.com",
             password="user3pass",
             user="realuser3",
-            name="user3"
+            name="user3",
+            location="ARG",
         )
     )
     user3: User = utils.create_user(
@@ -362,7 +382,8 @@ def test_search_users_returns_users_ordered_by_similarity():
             email="user2@gmail.com",
             password="user2pass",
             user="therealuser2",
-            name="user2"
+            name="user2",
+            location="ARG",
         )
     )
     user4: User = utils.create_user(
@@ -370,7 +391,8 @@ def test_search_users_returns_users_ordered_by_similarity():
             email="user4@gmail.com",
             password="user4pass",
             user="imnotsimilar",
-            name="user4"
+            name="user4",
+            location="ARG",
         )
     )
     user5: User = utils.create_user(
@@ -378,7 +400,8 @@ def test_search_users_returns_users_ordered_by_similarity():
             email="user5@gmail.com",
             password="user5pass",
             user="imausertoo",
-            name="user5"
+            name="user5",
+            location="ARG",
         )
     )
 
@@ -388,10 +411,9 @@ def test_search_users_returns_users_ordered_by_similarity():
     response_json = response.json()
 
     assert len(response_json) == 3
-    assert response_json[0]["id"] == str(user1.id)  
-    assert response_json[1]["id"] == str(user3.id) 
-    assert response_json[2]["id"] == str(user2.id) 
-
+    assert response_json[0]["id"] == str(user1.id)
+    assert response_json[1]["id"] == str(user3.id)
+    assert response_json[2]["id"] == str(user2.id)
 
 
 def test_search_followeds_returns_followeds_ordered_by_similarity():
@@ -400,7 +422,8 @@ def test_search_followeds_returns_followeds_ordered_by_similarity():
             email="user1@gmail.com",
             password="user1pass",
             user="therealuser",
-            name="user1"
+            name="user1",
+            location="ARG",
         )
     )
     user2: User = utils.create_user(
@@ -408,7 +431,8 @@ def test_search_followeds_returns_followeds_ordered_by_similarity():
             email="user3@gmail.com",
             password="user3pass",
             user="realuser3",
-            name="user3"
+            name="user3",
+            location="ARG",
         )
     )
     user3: User = utils.create_user(
@@ -416,7 +440,8 @@ def test_search_followeds_returns_followeds_ordered_by_similarity():
             email="user2@gmail.com",
             password="user2pass",
             user="therealuser2",
-            name="user2"
+            name="user2",
+            location="ARG",
         )
     )
     user4: User = utils.create_user(
@@ -424,14 +449,17 @@ def test_search_followeds_returns_followeds_ordered_by_similarity():
             email="user4@gmail.com",
             password="user4pass",
             user="therealuser566",
-            name="user4"
+            name="user4",
+            location="ARG",
         )
     )
 
     client.post(f"/users/follow/{user1.id}", json=str(user2.id))
     client.post(f"/users/follow/{user1.id}", json=str(user3.id))
 
-    response = client.get(f"/users/followeds/{user1.id}/search?user=therealuser&limit=10")
+    response = client.get(
+        f"/users/followeds/{user1.id}/search?user=therealuser&limit=10"
+    )
     assert response.status_code == status.HTTP_200_OK
 
     response_json = response.json()
@@ -441,8 +469,223 @@ def test_search_followeds_returns_followeds_ordered_by_similarity():
     assert response_json[1]["id"] == str(user2.id)
 
 
+def test_recommendations_with_no_coincidences_returns_an_empty_array():
+    user1: User = utils.create_user(
+        SignUpSchema(
+            email="user1@gmail.com",
+            password="user1pass",
+            user="therealuser",
+            name="user1",
+            location="ARG",
+        )
+    )
 
-    
+    res = client.get(f"/users/recommendations/{user1.id}")
+
+    assert res.status_code == status.HTTP_200_OK
+    res_json = res.json()
+    assert len(res_json) == 0
 
 
+def test_recommendations_with_location_coincidences():
+    user1: User = utils.create_user(
+        SignUpSchema(
+            email="user1@gmail.com",
+            password="user1pass",
+            user="therealuser",
+            name="user1",
+            location="ARG",
+        )
+    )
+    user2: User = utils.create_user(
+        SignUpSchema(
+            email="user2@gmail.com",
+            password="user2pass",
+            user="therealuser2",
+            name="user2",
+            location="USA",
+        )
+    )
+    user3: User = utils.create_user(
+        SignUpSchema(
+            email="user3@gmail.com",
+            password="user3pass",
+            user="realuser3",
+            name="user3",
+            location="ARG",
+        )
+    )
 
+    res = client.get(f"/users/recommendations/{user1.id}")
+
+    assert res.status_code == status.HTTP_200_OK
+    res_json = res.json()
+
+    assert len(res_json) == 1
+    assert res_json[0]["id"] == str(user3.id)
+    assert res_json[0]["name"] == user3.name
+    assert res_json[0]["user"] == user3.user
+
+
+def test_recommendations_with_interest_coincidences():
+    user1: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user1@gmail.com",
+            password="user1pass",
+            user="therealuser",
+            name="user1",
+            location="ARG",
+            interests=[Interests("engineering")],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+    user2: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user2@gmail.com",
+            password="user2pass",
+            user="therealuser2",
+            name="user2",
+            location="USA",
+            interests=[Interests("engineering")],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+    user3: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user3@gmail.com",
+            password="user3pass",
+            user="realuser3",
+            name="user3",
+            location="ARG",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+
+    res = client.get(f"/users/recommendations/{user1.id}")
+
+    assert res.status_code == status.HTTP_200_OK
+    res_json = res.json()
+    assert len(res_json) == 2
+
+
+def test_recommendations_with_followeds_followeds():
+    user1: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user1@gmail.com",
+            password="user1pass",
+            user="therealuser",
+            name="user1",
+            location="ARG",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+    user2: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user2@gmail.com",
+            password="user2pass",
+            user="therealuser2",
+            name="user2",
+            location="USA",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+    user3: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user3@gmail.com",
+            password="user3pass",
+            user="realuser3",
+            name="user3",
+            location="ATG",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+
+    utils.follow(user3.id, user2.id)
+    utils.follow(user2.id, user1.id)
+
+    res = client.get(f"/users/recommendations/{user3.id}")
+
+    assert res.status_code == status.HTTP_200_OK
+    res_json = res.json()
+    assert len(res_json) == 1
+    assert res_json[0]["id"] == str(user1.id)
+    assert res_json[0]["user"] == user1.user
+    assert res_json[0]["name"] == user1.name
+
+
+def test_recommendations_with_followeds_followeds_does_not_include_an_already_followed_user():
+    user1: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user1@gmail.com",
+            password="user1pass",
+            user="therealuser",
+            name="user1",
+            location="ARG",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+    user2: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user2@gmail.com",
+            password="user2pass",
+            user="therealuser2",
+            name="user2",
+            location="USA",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+    user3: User = utils.create_user_with_all_fields(
+        UserWithoutId(
+            email="user3@gmail.com",
+            password="user3pass",
+            user="realuser3",
+            name="user3",
+            location="ATG",
+            interests=[],
+            goals=[],
+            followeds=[],
+            followers=[],
+            twitsnaps=[],
+        )
+    )
+
+    utils.follow(user3.id, user1.id)
+    utils.follow(user3.id, user2.id)
+    utils.follow(user2.id, user1.id)
+
+    res = client.get(f"/users/recommendations/{user3.id}")
+
+    assert res.status_code == status.HTTP_200_OK
+    res_json = res.json()
+
+    assert len(res_json) == 0

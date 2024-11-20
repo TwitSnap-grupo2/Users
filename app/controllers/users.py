@@ -69,7 +69,7 @@ def create_account(user_data: schemas.SignUpSchema, db: Session = Depends(get_db
 )
 def set_location(
     user_id: UUID,
-    location: schemas.Location = Body(example={"location": "ARG"}),
+    location: schemas.Location = Body(examples={"location": "ARG"}),
     db: Session = Depends(get_db),
 ):
     """
@@ -189,9 +189,14 @@ def update_name(user_id: UUID, name: str = Query(), db: Session = Depends(get_db
         raise HTTPException(status_code=404, detail=e.message)
 
 
-@router.post("/devices/{user_id}")
-def add_device(user_id: UUID, deviceToken: str = Body(), db: Session = Depends(get_db)):
-    print(f"deviceToken: {deviceToken} | user_id: {user_id}")
+@router.get("/recommendations/{user_id}")
+def get_recommendations(
+    user_id: UUID, db: Session = Depends(get_db)
+) -> list[schemas.RecommendationUser]:
+    try:
+        return users_service.get_recommendations(db, user_id)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)
 
 
 @router.post("/ping")

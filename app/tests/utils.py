@@ -1,5 +1,5 @@
 import os
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from pydantic import EmailStr
 from app.repositories import models, users, database
@@ -17,19 +17,29 @@ def create_user(new_user: schemas.SignUpSchema) -> schemas.User:
     return users_service.signup(db=db, new_user=new_user)
 
 
+def create_user_with_all_fields(new_user: schemas.UserWithoutId) -> schemas.User:
+    db = next(database.get_db())
+    return users._insert_user(db, new_user)
+
+
 def contains_values(expected_values, response_dict) -> bool:
     return all(item in response_dict.items() for item in expected_values.items())
 
 
-def generate_user(email: EmailStr, user: str, name: str) -> models.User:
+def generate_user(email: EmailStr, user: str, name: str, location: str) -> models.User:
     return models.User(
         id=uuid4(),
         email=email,
         user=user,
         name=name,
-        location="",
+        location=location,
         goals=[],
         interests=[],
         followers=[],
         twitsnaps=[],
     )
+
+
+def follow(source_id: UUID, followed_id: UUID):
+    db = next(database.get_db())
+    return users.add_follower(db, source_id, followed_id)

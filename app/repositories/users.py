@@ -1,12 +1,18 @@
 # from app.repositories.schemas import NewUser, User
 from uuid import uuid4, UUID
 from pydantic import EmailStr
-from sqlalchemy import func
+from sqlalchemy import and_, func, or_, select, text
 from sqlalchemy.orm import Session
 
+from app.utils import schemas
 from app.utils.errors import NotAllowed, UserNotFound
 
 from . import models
+
+# import logging
+
+# logging.basicConfig()
+# logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 
 def get_users(db: Session) -> list[models.User]:
@@ -16,11 +22,12 @@ def get_users(db: Session) -> list[models.User]:
 def search_users(db: Session, query: str, limit: int) -> list[models.User]:
     return (
         db.query(models.User)
-        .filter(func.similarity(models.User.user, query) > 0.1)  
-        .order_by(func.similarity(models.User.user, query).desc()) 
+        .filter(func.similarity(models.User.user, query) > 0.1)
+        .order_by(func.similarity(models.User.user, query).desc())
         .limit(limit)
         .all()
     )
+
 
 def insert_user(db: Session, new_user: models.User) -> models.User:
     db_user = models.User(
@@ -61,6 +68,7 @@ def get_user_by_email_or_name(db: Session, email: EmailStr, user: str) -> models
         .first()
     )
 
+
 def get_admin_by_email(db: Session, email: EmailStr) -> models.Admins:
     return db.query(models.Admins).filter(models.Admins.email == email).first()
 
@@ -73,11 +81,15 @@ def get_user_by_id(db: Session, user_id: UUID) -> models.User:
     user = db.query(models.User).filter(models.User.id == user_id).first()
     return user
 
+
 def get_admin_by_id(db: Session, admin_id: UUID) -> models.Admins:
     admin = db.query(models.Admins).filter(models.Admins.id == admin_id).first()
     return admin
 
-def search_followeds(db: Session, user_id: UUID, query: str, limit: int) -> list[models.User]:
+
+def search_followeds(
+    db: Session, user_id: UUID, query: str, limit: int
+) -> list[models.User]:
     user: models.User = get_user_by_id(db, user_id)
     if not user:
         raise UserNotFound("No user was found for the given id")
@@ -90,10 +102,6 @@ def search_followeds(db: Session, user_id: UUID, query: str, limit: int) -> list
         .limit(limit)
         .all()
     )
-
-    
-
-
 
 
 def empty_users(db: Session):
@@ -204,6 +212,7 @@ def get_followeds(db: Session, user_id: UUID) -> models.User:
         raise UserNotFound("No user was found for the given id")
     return user.followeds
 
+
 def update_name(db: Session, user_id: UUID, name: str) -> models.User:
     user = get_user_by_id(db, user_id)
     if not user:
@@ -212,3 +221,70 @@ def update_name(db: Session, user_id: UUID, name: str) -> models.User:
     db.commit()
     db.refresh(user)
     return user
+
+
+def get_recommendations(db: Session, user_id: UUID) -> list[models.User]:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise UserNotFound("No user was found for the given id")
+
+    statement = text(
+        """
+            WITH direct_followed AS (
+                SELECT followed_id
+                FROM followers
+                WHERE follower_id =:user_id
+            )
+            SELECT users.id, users.name, users.user
+            FROM direct_followed df
+            JOIN followers uf ON df.followed_id = uf.follower_id
+            JOIN users ON (uf.followed_id=users.id) 
+            WHERE uf.followed_id NOT IN (
+                SELECT followed_id
+                FROM followers
+                WHERE follower_id =:user_id
+            )
+            UNION
+            SELECT u1.id, u1.name, u1.user FROM users u1
+            JOIN users_interests ui ON (u1.id = ui.id_user)
+            WHERE ui.interest IN (
+            SELECT ui.interest FROM users u
+            JOIN users_interests ui ON (u.id = ui.id_user)
+            WHERE u.id =:user_id
+            ) 
+            AND u1.id !=:user_id
+            UNION
+            SELECT u1.id, u1.name, u1.user FROM users u1
+            WHERE u1.location =:user_location
+            AND u1.id !=:user_id
+                     """
+    )
+    result = db.execute(statement, {"user_id": user.id, "user_location": user.location})
+
+    recommendations = [dict(row) for row in result.mappings()]
+
+    return recommendations
+
+
+# For testing purposes
+def _insert_user(db: Session, new_user: schemas.UserWithoutId) -> models.User:
+    db_user = models.User(
+        id=uuid4(),
+        email=new_user.email,
+        user=new_user.user,
+        name=new_user.name,
+        location=new_user.location,
+        goals=new_user.goals,
+        interests=[
+            models.UserInterests(interest=schemas.Interests(interest))
+            for interest in new_user.interests
+        ],
+        followers=new_user.followers,
+        followeds=new_user.followeds,
+        twitsnaps=new_user.twitsnaps,
+    )
+
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user

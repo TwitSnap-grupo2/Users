@@ -6,7 +6,7 @@
 1. python -m venv .venv
    - Esto crea un virtual environment dentro de la carpeta root del proyecto (donde deberiamos estar parados)
    - Es posible que el vscode no reconozca los imports, es porque no detecta la dependencia en su interprete default (o el que tengas seleccionado), para esto hay que cambiar el interprete hacia aquel instalado en el virtual env.
-2. source .venv/bin/activate
+2. source .venv/bin/activat   e
    - Activar el virtual environment, a partir de aca las dependencias se quedan en este env
 3. pip install -r requirements.txt
    - Instalar las dependencias de forma "local", es decir, dentro del virtual environment

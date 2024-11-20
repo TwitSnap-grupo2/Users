@@ -5,6 +5,7 @@ from app.repositories import models
 from app.repositories.users import (
     get_followeds,
     get_followers,
+    get_recommendations,
     get_users,
     insert_user,
     get_user_by_email_or_name,
@@ -26,10 +27,16 @@ class TestUserRepository(unittest.TestCase):
     def setUp(self):
         self.db_mock = MagicMock()
         self.user: models.User = generate_user(
-            email="test@example.com", user="test_user", name="Test User"
+            email="test@example.com",
+            user="test_user",
+            name="Test User",
+            location="ARG",
         )
         self.user2: models.User = generate_user(
-            email="test2@example.com", user="test_user2", name="Test User 2"
+            email="test2@example.com",
+            user="test_user2",
+            name="Test User 2",
+            location="ARG",
         )
 
     def test_get_users(self):
@@ -39,7 +46,7 @@ class TestUserRepository(unittest.TestCase):
 
     def test_insert_user(self):
         new_user = schemas.NewUser(
-            email="new@example.com", user="new_user", name="New User"
+            email="new@example.com", user="new_user", name="New User", location="ARG"
         )
         self.db_mock.add = MagicMock()
         self.db_mock.commit = MagicMock()
@@ -209,6 +216,79 @@ class TestUserRepository(unittest.TestCase):
 
         with self.assertRaises(UserNotFound) as context:
             get_followeds(self.db_mock, self.user.id)
+
+        self.assertEqual(str(context.exception), "No user was found for the given id")
+
+    def test_get_recommendations_success(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+
+        self.db_mock.execute.return_value.mappings.return_value = [
+            {
+                "id": str(uuid4()),
+                "name": "Recommended User 1",
+                "user": "recommended_user1",
+            },
+            {
+                "id": str(uuid4()),
+                "name": "Recommended User 2",
+                "user": "recommended_user2",
+            },
+        ]
+
+        recommendations = get_recommendations(self.db_mock, self.user.id)
+
+        self.assertEqual(len(recommendations), 2)
+        self.assertEqual(recommendations[0]["name"], "Recommended User 1")
+        self.assertEqual(recommendations[1]["name"], "Recommended User 2")
+
+    def test_get_recommendations_no_results(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+
+        self.db_mock.execute.return_value.mappings.return_value = []
+
+        recommendations = get_recommendations(self.db_mock, self.user.id)
+
+        self.assertEqual(len(recommendations), 0)
+
+    def test_get_recommendations_location_based(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+
+        self.db_mock.execute.return_value.mappings.return_value = [
+            {"id": str(uuid4()), "name": "Nearby User", "user": "nearby_user"}
+        ]
+
+        recommendations = get_recommendations(self.db_mock, self.user.id)
+
+        self.assertEqual(len(recommendations), 1)
+        self.assertEqual(recommendations[0]["name"], "Nearby User")
+        self.assertEqual(recommendations[0]["user"], "nearby_user")
+
+    def test_get_recommendations_interest_based(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+
+        self.db_mock.execute.return_value.mappings.return_value = [
+            {"id": str(uuid4()), "name": "Interest-Based User", "user": "interest_user"}
+        ]
+
+        recommendations = get_recommendations(self.db_mock, self.user.id)
+
+        self.assertEqual(len(recommendations), 1)
+        self.assertEqual(recommendations[0]["name"], "Interest-Based User")
+        self.assertEqual(recommendations[0]["user"], "interest_user")
+
+    def test_get_recommendations_user_not_found(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = None
+
+        with self.assertRaises(UserNotFound) as context:
+            get_recommendations(self.db_mock, self.user.id)
 
         self.assertEqual(str(context.exception), "No user was found for the given id")
 

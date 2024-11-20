@@ -25,6 +25,7 @@ def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
         followeds=[followed.id for followed in user.followeds],
     )
 
+
 def __database_model_to_admin_schema(user: models.Admins) -> schemas.Admin:
     return schemas.Admin(
         id=user.id,
@@ -38,7 +39,6 @@ def fetch_users(db: Session) -> list[schemas.User]:
     return [__database_model_to_schema(user) for user in db_users]
 
 
-
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
     user: models.User = users.get_user_by_id(db=db, user_id=id)
     if user:
@@ -50,12 +50,18 @@ def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
     if user:
         return __database_model_to_schema(user)
 
-def search_users(db: Session, user: str, limit:int) -> list[schemas.User]:
+
+def search_users(db: Session, user: str, limit: int) -> list[schemas.User]:
     db_users: list[schemas.DatabaseUser] = users.search_users(db, user, limit)
     return [__database_model_to_schema(user) for user in db_users]
 
-def search_followeds(db: Session, user_id: UUID, user: str, limit:int) -> list[schemas.User]:
-    db_users: list[schemas.DatabaseUser] = users.search_followeds(db, user_id, user, limit)
+
+def search_followeds(
+    db: Session, user_id: UUID, user: str, limit: int
+) -> list[schemas.User]:
+    db_users: list[schemas.DatabaseUser] = users.search_followeds(
+        db, user_id, user, limit
+    )
     return [__database_model_to_schema(user) for user in db_users]
 
 
@@ -86,10 +92,12 @@ def signup_admin(db: Session, new_admin: schemas.SignUpAdminSchema) -> schemas.A
     if admin.email == new_admin.email:
         raise ExistentUserError("Mail is already registered")
 
+
 def fetch_admin_by_id(db: Session, id: UUID) -> schemas.Admin | None:
     admin: models.Admins = users.get_admin_by_id(db=db, admin_id=id)
     if admin:
         return __database_model_to_admin_schema(admin)
+
 
 def set_location(db: Session, user_id: UUID, location: CountryAlpha3) -> schemas.User:
     return __database_model_to_schema(users.set_location(db, user_id, str(location)))
@@ -133,5 +141,13 @@ def get_followeds(db: Session, user_id: UUID) -> list[schemas.User]:
         __database_model_to_schema(user) for user in users.get_followeds(db, user_id)
     ]
 
-def update_name(db: Session, user_id: UUID, name: str) -> schemas.User:
+
+def update_name(db: Session, user_id:    UUID, name: str) -> schemas.User:
     return __database_model_to_schema(users.update_name(db, user_id, name))
+
+
+def get_recommendations(db: Session, user_id: UUID) -> schemas.User:
+    return [
+        schemas.RecommendationUser(id=user["id"], user=user["user"], name=user["name"])
+        for user in users.get_recommendations(db, user_id)
+    ]

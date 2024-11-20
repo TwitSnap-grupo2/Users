@@ -17,42 +17,43 @@ class UserSummary(BaseModel):
     user: str  # User's username
     name: str  # User's full name
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class DatabaseGoal(BaseModel):
     goal: str
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class DatabaseInterest(BaseModel):
     interest: Interests
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class DatabaseFollower(BaseModel):
     follower_id: UUID
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class DatabaseTwitsnap(BaseModel):
     id_twitsnap: UUID
 
-    class Config:
-        orm_mode = True
+    class ConfigDict:
+        from_attributes = True
 
 
 class NewUser(BaseModel):
     email: EmailStr
     user: str
     name: str
+    location: str
 
 
 class User(NewUser):
@@ -107,3 +108,18 @@ class Location(BaseModel):
 class Admin(BaseModel):
     id: UUID
     email: EmailStr
+
+
+class RecommendationUser(BaseModel):
+    id: UUID
+    user: str
+    name: str
+
+
+class UserWithoutId(NewUser):
+    location: str
+    interests: list[Interests]
+    goals: list[str]
+    followers: list[UUID]
+    followeds: list[UUID]
+    twitsnaps: list[UUID]
