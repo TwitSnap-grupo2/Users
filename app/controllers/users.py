@@ -1,7 +1,7 @@
 import logging
 from uuid import UUID
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
-from app.utils.errors import NotAllowed, UserNotFound
+from app.utils.errors import BlockedUser, NotAllowed, UserNotFound
 from ..repositories import models
 from ..services import users as users_service
 from sqlalchemy.orm import Session
@@ -26,10 +26,14 @@ def search_users(user: str, limit: int, db: Session = Depends(get_db)):
 
 @router.get("/{user_id}", response_model=schemas.User)
 def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
-    user = users_service.fetch_user_by_id(db=db, id=user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+    try:
+
+        user = users_service.fetch_user_by_id(db=db, id=user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    except BlockedUser as e:
+        raise HTTPException(status_code=403, detail=e.message)
 
 
 @router.get("/followeds/{user_id}/search", response_model=list[schemas.User])
@@ -195,6 +199,22 @@ def get_recommendations(
 ) -> list[schemas.RecommendationUser]:
     try:
         return users_service.get_recommendations(db, user_id)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)
+
+
+@router.patch("/block/{user_id}")
+def block(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
+    try:
+        return users_service.block_user(db, user_id)
+    except UserNotFound as e:
+        raise HTTPException(status_code=404, detail=e.message)
+
+
+@router.patch("/unblock/{user_id}")
+def unblock(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
+    try:
+        return users_service.unblock_user(db, user_id)
     except UserNotFound as e:
         raise HTTPException(status_code=404, detail=e.message)
 

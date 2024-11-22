@@ -689,3 +689,67 @@ def test_recommendations_with_followeds_followeds_does_not_include_an_already_fo
     res_json = res.json()
 
     assert len(res_json) == 0
+
+
+def test_block_non_existent_user():
+    response = client.patch(
+        f"/users/block/{uuid4()}",
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    response_json = response.json()
+    assert response_json["detail"] == "No user was found for the given id"
+
+
+def test_unblock_non_existent_user():
+    response = client.patch(
+        f"/users/unblock/{uuid4()}",
+    )
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    response_json = response.json()
+    assert response_json["detail"] == "No user was found for the given id"
+
+
+def test_block_user():
+    user: User = utils.create_user(test_user)
+
+    response = client.patch(
+        f"/users/block/{user.id}",
+    )
+    response_user = user.model_dump()
+    response_user["is_blocked"] = True
+    response_user["id"] = str(response_user["id"])
+
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert utils.contains_values(response_user, response_json)
+
+
+def test_get_user_when_blocked():
+    user: User = utils.create_user(test_user)
+
+    client.patch(
+        f"/users/block/{user.id}",
+    )
+    response = client.get(
+        f"/users/{user.id}",
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response_json = response.json()
+    assert response_json["detail"] == "This user is currently blocked"
+
+
+def test_unblock_blocked_user():
+    user: User = utils.create_user(test_user)
+
+    client.patch(
+        f"/users/block/{user.id}",
+    )
+    response = client.patch(
+        f"/users/unblock/{user.id}",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    response_json = response.json()
+    assert response_json["id"] == str(user.id)
+    assert response_json["is_blocked"] == False

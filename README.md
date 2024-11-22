@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/TwitSnap-grupo2/Users/badge.svg)](https://coveralls.io/github/TwitSnap-grupo2/Users)
+
 ## Uso de alembic y migraciones
 
 - Este es un poco mas complicado, por lo que lo hago con un virtual env de python, los pasos:
@@ -6,7 +7,7 @@
 1. python -m venv .venv
    - Esto crea un virtual environment dentro de la carpeta root del proyecto (donde deberiamos estar parados)
    - Es posible que el vscode no reconozca los imports, es porque no detecta la dependencia en su interprete default (o el que tengas seleccionado), para esto hay que cambiar el interprete hacia aquel instalado en el virtual env.
-2. source .venv/bin/activat   e
+2. source .venv/bin/activat e
    - Activar el virtual environment, a partir de aca las dependencias se quedan en este env
 3. pip install -r requirements.txt
    - Instalar las dependencias de forma "local", es decir, dentro del virtual environment
@@ -20,7 +21,7 @@
   - Los tipos pueden ser: production, development, test. Esto define la URL contra la que se haran las migraciones
 
 ```bash
-alembic revision --autogenerate -m "<descripcion_de_migracion>"
+ENV=<env> alembic revision --autogenerate -m "<descripcion_de_migracion>"
 ```
 
 - Por ultimo, para aplicar la migracion (funciona como las refs de git)

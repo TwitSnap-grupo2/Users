@@ -64,6 +64,7 @@ class User(NewUser):
     followers: list[UUID]
     followeds: list[UUID]
     twitsnaps: list[UUID]
+    is_blocked: bool
 
 
 class DatabaseUser(BaseModel):
@@ -77,6 +78,7 @@ class DatabaseUser(BaseModel):
     followers: list[User] = []
     followeds: list[User] = []
     twitsnaps: list[DatabaseTwitsnap] = []
+    is_blocked: bool
 
 
 class SignUpSchema(BaseModel):

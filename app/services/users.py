@@ -5,7 +5,7 @@ from app.repositories.database import engine
 from pydantic_extra_types.country import CountryAlpha3
 from app.utils import schemas
 from pydantic import EmailStr
-from app.utils.errors import ExistentUserError
+from app.utils.errors import BlockedUser, ExistentUserError
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -17,6 +17,7 @@ def __database_model_to_schema(user: schemas.DatabaseUser) -> schemas.User:
         email=user.email,
         user=user.user,
         name=user.name,
+        is_blocked=user.is_blocked,
         location=user.location,
         goals=[g.goal for g in user.goals],
         interests=[schemas.Interests(interest.interest) for interest in user.interests],
@@ -41,7 +42,11 @@ def fetch_users(db: Session) -> list[schemas.User]:
 
 def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
     user: models.User = users.get_user_by_id(db=db, user_id=id)
+    print("user: {user}")
+
     if user:
+        if user.is_blocked:
+            raise BlockedUser
         return __database_model_to_schema(user)
 
 
@@ -142,7 +147,7 @@ def get_followeds(db: Session, user_id: UUID) -> list[schemas.User]:
     ]
 
 
-def update_name(db: Session, user_id:    UUID, name: str) -> schemas.User:
+def update_name(db: Session, user_id: UUID, name: str) -> schemas.User:
     return __database_model_to_schema(users.update_name(db, user_id, name))
 
 
@@ -151,3 +156,15 @@ def get_recommendations(db: Session, user_id: UUID) -> schemas.User:
         schemas.RecommendationUser(id=user["id"], user=user["user"], name=user["name"])
         for user in users.get_recommendations(db, user_id)
     ]
+
+
+def block_user(db: Session, user_id: UUID) -> schemas.User:
+    return __database_model_to_schema(
+        users.modify_block_status(db, user_id, block_status=True)
+    )
+
+
+def unblock_user(db: Session, user_id: UUID) -> schemas.User:
+    return __database_model_to_schema(
+        users.modify_block_status(db, user_id, block_status=False)
+    )

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, String, UUID, Table, Enum, text
+from sqlalchemy import Column, ForeignKey, String, Boolean, UUID, Table, Enum, text
 from sqlalchemy.orm import relationship
 
 from ..repositories.database import Base
@@ -33,6 +33,7 @@ class User(Base):
     user = Column(String, unique=True)
     name = Column(String)
     location = Column(String)
+    is_blocked = Column(Boolean, server_default="False")
 
     goals = relationship("UsersGoals", cascade="all, delete", back_populates="user")
     interests = relationship(

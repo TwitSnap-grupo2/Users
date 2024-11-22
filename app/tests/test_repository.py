@@ -12,6 +12,7 @@ from app.repositories.users import (
     get_user_by_email,
     get_user_by_id,
     empty_users,
+    modify_block_status,
     set_location,
     set_interests,
     set_goals,
@@ -291,6 +292,42 @@ class TestUserRepository(unittest.TestCase):
             get_recommendations(self.db_mock, self.user.id)
 
         self.assertEqual(str(context.exception), "No user was found for the given id")
+
+    def test_block_user_not_foiund(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = None
+
+        with self.assertRaises(UserNotFound) as context:
+            modify_block_status(self.db_mock, self.user.id, block_status=True)
+
+        self.assertEqual(str(context.exception), "No user was found for the given id")
+
+    def test_unblock_user_not_foiund(self):
+        self.db_mock.query.return_value.filter.return_value.first.return_value = None
+
+        with self.assertRaises(UserNotFound) as context:
+            modify_block_status(self.db_mock, self.user.id, block_status=False)
+
+        self.assertEqual(str(context.exception), "No user was found for the given id")
+
+    def test_block_user(self):
+        self.user.is_blocked = False
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+        updated_user = modify_block_status(
+            self.db_mock, self.user.id, block_status=True
+        )
+        self.assertNotEqual(updated_user.is_blocked, updated_user)
+
+    def test_unblock_user(self):
+        self.user.is_blocked = True
+        self.db_mock.query.return_value.filter.return_value.first.return_value = (
+            self.user
+        )
+        updated_user = modify_block_status(
+            self.db_mock, self.user.id, block_status=False
+        )
+        self.assertNotEqual(updated_user.is_blocked, updated_user)
 
 
 if __name__ == "__main__":

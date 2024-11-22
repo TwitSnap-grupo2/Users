@@ -266,6 +266,17 @@ def get_recommendations(db: Session, user_id: UUID) -> list[models.User]:
     return recommendations
 
 
+def modify_block_status(db: Session, user_id: UUID, block_status: bool):
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise UserNotFound("No user was found for the given id")
+
+    user.is_blocked = block_status
+    db.commit()
+    db.refresh(user)
+    return user
+
+
 # For testing purposes
 def _insert_user(db: Session, new_user: schemas.UserWithoutId) -> models.User:
     db_user = models.User(
