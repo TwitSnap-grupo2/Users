@@ -53,6 +53,8 @@ def fetch_user_by_id(db: Session, id: UUID) -> schemas.User | None:
 def fetch_user_by_email(db: Session, email: EmailStr) -> schemas.User | None:
     user: models.User = users.get_user_by_email(db=db, email=email)
     if user:
+        if user.is_blocked:
+            raise BlockedUser
         return __database_model_to_schema(user)
 
 

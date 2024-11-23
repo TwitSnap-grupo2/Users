@@ -724,7 +724,7 @@ def test_block_user():
     assert utils.contains_values(response_user, response_json)
 
 
-def test_get_user_when_blocked():
+def test_get_user_by_id_when_blocked():
     user: User = utils.create_user(test_user)
 
     client.patch(
@@ -732,6 +732,21 @@ def test_get_user_when_blocked():
     )
     response = client.get(
         f"/users/{user.id}",
+    )
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    response_json = response.json()
+    assert response_json["detail"] == "This user is currently blocked"
+
+
+def test_get_user_by_email_when_blocked():
+    user: User = utils.create_user(test_user)
+
+    client.patch(
+        f"/users/block/{user.id}",
+    )
+    response = client.get(
+        f"/users/email/{user.email}",
     )
 
     assert response.status_code == status.HTTP_403_FORBIDDEN

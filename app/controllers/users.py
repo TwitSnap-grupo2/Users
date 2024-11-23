@@ -27,7 +27,6 @@ def search_users(user: str, limit: int, db: Session = Depends(get_db)):
 @router.get("/{user_id}", response_model=schemas.User)
 def get_user(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
     try:
-
         user = users_service.fetch_user_by_id(db=db, id=user_id)
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -47,11 +46,14 @@ def search_followeds(
 
 
 @router.get("/email/{email}", response_model=schemas.User)
-def get_user(email: EmailStr, db: Session = Depends(get_db)) -> schemas.User:
-    user = users_service.fetch_user_by_email(db=db, email=email)
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+def get_user_by_email(email: EmailStr, db: Session = Depends(get_db)) -> schemas.User:
+    try:
+        user = users_service.fetch_user_by_email(db=db, email=email)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        return user
+    except BlockedUser as e:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=e.message)
 
 
 @router.post(
