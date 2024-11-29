@@ -1,5 +1,6 @@
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+import httpx
 from .controllers import users
 from fastapi import FastAPI, HTTPException, Request, status
 
@@ -86,6 +87,28 @@ async def validation_exception_handler(request: Request, exc: HTTPException):
             "instance": str(request.url),
         },
     )
+
+
+@app.middleware("http")
+async def validate_api_key(request: Request, call_next):
+    async with httpx.AsyncClient() as client:
+        if request.url.path in ["/docs", "/redoc", "/openapi.json", "/users/ping"]:
+            return await call_next(request)
+
+        api_key = request.headers.get("Authorization")
+
+        if not api_key:
+            return JSONResponse(status_code=401, content={"detail": "Missing API key"})
+
+        response = await client.get(
+            f"https://services-registry.onrender.com/api/registry/validate?apiKey={api_key}"
+        )
+
+        if response.status_code == 401:
+            return JSONResponse(status_code=401, content={"detail": "Invalid API key"})
+
+        response = await call_next(request)
+        return response
 
 
 app.include_router(users.router)
