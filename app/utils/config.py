@@ -30,17 +30,16 @@ REGISTRY_URL = os.getenv("REGISTRY_URL")
 
 API_KEY = None
 
+if env != "test":
+    if SERVICE_ID:
+        with httpx.Client() as client:
+            res = client.get(f"{REGISTRY_URL}/api/registry/{SERVICE_ID}")
+            if res.status_code != 200:
+                print("There is no api key for this microservice")
+            else:
+                API_KEY = res.json()["apiKey"]
+    else:
+        print("No service id was provided. You have to register the microservice.")
 
-if SERVICE_ID:
-    with httpx.Client() as client:
-        res = client.get(f"{REGISTRY_URL}/api/registry/{SERVICE_ID}")
-        if res.status_code != 200:
-            print("There is no api key for this microservice")
-        else:
-            API_KEY = res.json()["apiKey"]
-else:
-    print("No service id was provided. You have to register the microservice.")
-
-
-print(f"SERVICE_ID: {SERVICE_ID}")
-print(f"API_KEY: {API_KEY}")
+    print(f"SERVICE_ID: {SERVICE_ID}")
+    print(f"API_KEY: {API_KEY}")

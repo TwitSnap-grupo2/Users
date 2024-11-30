@@ -1,3 +1,4 @@
+import os
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 import httpx
@@ -89,26 +90,34 @@ async def validation_exception_handler(request: Request, exc: HTTPException):
     )
 
 
-@app.middleware("http")
-async def validate_api_key(request: Request, call_next):
-    async with httpx.AsyncClient() as client:
-        if request.url.path in ["/docs", "/redoc", "/openapi.json", "/users/ping"]:
-            return await call_next(request)
+env = os.getenv("ENV")
 
-        api_key = request.headers.get("Authorization")
+if env != "test":
 
-        if not api_key:
-            return JSONResponse(status_code=401, content={"detail": "Missing API key"})
+    @app.middleware("http")
+    async def validate_api_key(request: Request, call_next):
+        async with httpx.AsyncClient() as client:
+            if request.url.path in ["/docs", "/redoc", "/openapi.json", "/users/ping"]:
+                return await call_next(request)
 
-        response = await client.get(
-            f"https://services-registry.onrender.com/api/registry/validate?apiKey={api_key}"
-        )
+            api_key = request.headers.get("Authorization")
 
-        if response.status_code == 401:
-            return JSONResponse(status_code=401, content={"detail": "Invalid API key"})
+            if not api_key:
+                return JSONResponse(
+                    status_code=401, content={"detail": "Missing API key"}
+                )
 
-        response = await call_next(request)
-        return response
+            response = await client.get(
+                f"https://services-registry.onrender.com/api/registry/validate?apiKey={api_key}"
+            )
+
+            if response.status_code == 401:
+                return JSONResponse(
+                    status_code=401, content={"detail": "Invalid API key"}
+                )
+
+            response = await call_next(request)
+            return response
 
 
 app.include_router(users.router)
