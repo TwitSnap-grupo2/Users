@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 import pathlib
 
+import httpx
+
 # basedir = pathlib.Path(__file__).parents[1]
 # load_dotenv(basedir / ".env")
 load_dotenv()
@@ -23,3 +25,22 @@ else:
     )
 
 
+SERVICE_ID = os.getenv("SERVICE_ID")
+REGISTRY_URL = os.getenv("REGISTRY_URL")
+
+API_KEY = None
+
+
+if SERVICE_ID:
+    with httpx.Client() as client:
+        res = client.get(f"{REGISTRY_URL}/api/registry/{SERVICE_ID}")
+        if res.status_code != 200:
+            print("There is no api key for this microservice")
+        else:
+            API_KEY = res.json()["apiKey"]
+else:
+    print("No service id was provided. You have to register the microservice.")
+
+
+print(f"SERVICE_ID: {SERVICE_ID}")
+print(f"API_KEY: {API_KEY}")
