@@ -231,5 +231,5 @@ def ping(res: Response):
 @router.put("/apiKey")
 def set_api_key(api_key: str):
     os.environ["API_KEY"] = api_key
-    print(f"New API Key: {os.getenv("API_KEY")}")
+    print(f"New API Key: {os.getenv('API_KEY')}")
     return {"apiKey": api_key}
