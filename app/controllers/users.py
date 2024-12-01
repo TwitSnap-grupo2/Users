@@ -1,4 +1,5 @@
 import logging
+import os
 from uuid import UUID
 from fastapi import APIRouter, Body, Depends, HTTPException, Query, Response, status
 from app.utils.errors import BlockedUser, NotAllowed, UserNotFound
@@ -225,3 +226,10 @@ def unblock(user_id: UUID, db: Session = Depends(get_db)) -> schemas.User:
 def ping(res: Response):
     print("Healthcheck received")
     return {"message": "Pong"}
+
+
+@router.put("/apiKey")
+def set_api_key(api_key: str):
+    os.environ["API_KEY"] = api_key
+    print(f"New API Key: {os.getenv("API_KEY")}")
+    return {"apiKey": api_key}
